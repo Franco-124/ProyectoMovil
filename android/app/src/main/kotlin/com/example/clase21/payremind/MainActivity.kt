@@ -1,4 +1,4 @@
-package com.example.clase21.ebike_rentals
+package com.example.clase21.payremind
 
 import io.flutter.embedding.android.FlutterActivity
 

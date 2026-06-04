@@ -1,6 +1,6 @@
 {
-    "name": "ebike_rentals",
-    "short_name": "ebike_rentals",
+    "name": "PayRemind",
+    "short_name": "PayRemind",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
