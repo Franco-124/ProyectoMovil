@@ -15,6 +15,8 @@ import 'features/finance/presentation/screens/financial_dashboard_screen.dart';
 import 'features/finance/presentation/screens/transactions_screen.dart';
 import 'features/finance/presentation/screens/create_transaction_screen.dart';
 import 'features/finance/presentation/screens/budgets_screen.dart';
+import 'features/auth/presentation/providers/auth_provider.dart';
+import 'features/auth/data/models/user_model.dart';
 import 'shared/widgets/bottom_nav.dart';
 import 'shared/theme/app_theme.dart';
 
@@ -84,6 +86,12 @@ class PayRemindApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen<AsyncValue<UserModel?>>(authProvider, (previous, next) {
+      if (next.value == null) {
+        _router.refresh();
+      }
+    });
+
     return MaterialApp.router(
       title: 'PayRemind',
       debugShowCheckedModeBanner: false,

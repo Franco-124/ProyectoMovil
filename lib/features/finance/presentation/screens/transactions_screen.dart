@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/finance_provider.dart';
 import '../widgets/transaction_tile.dart';
+import '../../../../core/network/error_handler.dart';
 
 class TransactionsScreen extends ConsumerStatefulWidget {
   const TransactionsScreen({super.key});
@@ -80,13 +81,13 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                         const Icon(Icons.error_outline_rounded, color: Color(0xFFEF4444), size: 48),
                         const SizedBox(height: 16),
                         Text(
-                          'Error: $e',
+                          ErrorHandler.getFriendlyMessage(e),
                           style: const TextStyle(color: Color(0xFFF87171)),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 16),
                         ElevatedButton(
-                          onPressed: () => ref.refresh(transactionsProvider(filter)),
+                          onPressed: () => ref.invalidate(transactionsProvider(filter)),
                           child: const Text('Reintentar'),
                         ),
                       ],

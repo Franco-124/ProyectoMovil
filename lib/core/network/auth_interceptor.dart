@@ -1,7 +1,10 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import '../storage/secure_storage.dart';
 
 class AuthInterceptor extends Interceptor {
+  static VoidCallback? onUnauthorized;
+
   @override
   void onRequest(
     RequestOptions options,
@@ -26,6 +29,7 @@ class AuthInterceptor extends Interceptor {
     // Token expirado → limpiar y redirigir al login
     if (err.response?.statusCode == 401) {
       await SecureStorage.deleteToken();
+      onUnauthorized?.call();
     }
     handler.next(err);
   }

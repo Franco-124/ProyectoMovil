@@ -5,6 +5,7 @@ import '../providers/finance_provider.dart';
 import '../widgets/category_icon_widget.dart';
 import '../../../../models/finance/budget_model.dart';
 import '../../../../models/finance/category_model.dart';
+import '../../../../core/network/error_handler.dart';
 
 class BudgetsScreen extends ConsumerStatefulWidget {
   const BudgetsScreen({super.key});
@@ -157,13 +158,13 @@ class _BudgetsScreenState extends ConsumerState<BudgetsScreen> {
                         const Icon(Icons.error_outline_rounded, color: Color(0xFFEF4444), size: 48),
                         const SizedBox(height: 16),
                         Text(
-                          'Error: $e',
+                          ErrorHandler.getFriendlyMessage(e),
                           style: const TextStyle(color: Color(0xFFF87171)),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 16),
                         ElevatedButton(
-                          onPressed: () => ref.refresh(budgetsProvider(_selectedYear)),
+                          onPressed: () => ref.invalidate(budgetsProvider(_selectedYear)),
                           child: const Text('Reintentar'),
                         ),
                       ],

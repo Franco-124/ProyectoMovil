@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/client_provider.dart';
 import '../../data/models/client_model.dart';
+import '../../../../core/network/error_handler.dart';
 
 class ClientsScreen extends ConsumerStatefulWidget {
   const ClientsScreen({super.key});
@@ -539,7 +540,7 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
                   children: [
                     const Icon(Icons.error_outline_rounded, color: Color(0xFFEF4444), size: 48),
                     const SizedBox(height: 16),
-                    Text('Error al cargar clientes: $e', style: const TextStyle(color: Color(0xFFF87171))),
+                    Text(ErrorHandler.getFriendlyMessage(e), style: const TextStyle(color: Color(0xFFF87171)), textAlign: TextAlign.center),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () => ref.invalidate(clientsProvider),

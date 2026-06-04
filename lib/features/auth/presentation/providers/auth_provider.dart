@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/storage/secure_storage.dart';
+import '../../../../core/network/auth_interceptor.dart';
 import '../../data/models/user_model.dart';
 import '../../data/repositories/auth_repository.dart';
 
@@ -14,6 +15,9 @@ class AuthNotifier extends StateNotifier<AsyncValue<UserModel?>> {
 
   AuthNotifier(this._repo) : super(const AsyncValue.loading()) {
     _init();
+    AuthInterceptor.onUnauthorized = () {
+      state = const AsyncValue.data(null);
+    };
   }
 
   Future<void> _init() async {

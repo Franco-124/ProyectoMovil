@@ -7,6 +7,7 @@ import '../providers/finance_provider.dart';
 import '../widgets/category_icon_widget.dart';
 import '../widgets/transaction_tile.dart';
 import '../../../../models/finance/dashboard_model.dart';
+import '../../../../core/network/error_handler.dart';
 
 class FinancialDashboardScreen extends ConsumerStatefulWidget {
   const FinancialDashboardScreen({super.key});
@@ -132,7 +133,7 @@ class _FinancialDashboardScreenState extends ConsumerState<FinancialDashboardScr
                     children: [
                       const Icon(Icons.error_outline_rounded, color: Color(0xFFEF4444), size: 48),
                       const SizedBox(height: 16),
-                      Text('Error: $e', style: const TextStyle(color: Color(0xFFF87171)), textAlign: TextAlign.center),
+                      Text(ErrorHandler.getFriendlyMessage(e), style: const TextStyle(color: Color(0xFFF87171)), textAlign: TextAlign.center),
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: () => ref.refresh(financialDashboardProvider(period)),
