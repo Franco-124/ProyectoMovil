@@ -1,10 +1,15 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:dio/dio.dart';
+import 'package:image_picker/image_picker.dart';
 import '../providers/invoice_provider.dart';
 import '../../../clients/presentation/providers/client_provider.dart';
 import '../../../clients/data/models/client_model.dart';
+import '../../../../models/invoice_scan_result.dart';
+import '../../data/services/invoice_scan_service.dart';
 
 class CreateInvoiceScreen extends ConsumerStatefulWidget {
   const CreateInvoiceScreen({super.key});
@@ -24,11 +29,17 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
   DateTime? _dueDate;
   bool _remindersActive = true;
   bool _isLoading = false;
+  bool _isScanning = false;
+  InvoiceScanResult? _scanResult;
+
+  bool _wasScanned(dynamic value) =>
+      _scanResult != null && value != null;
 
   final List<String> _currencies = ['USD', 'EUR', 'COP', 'MXN', 'ARS'];
 
   @override
   void dispose() {
+    ScaffoldMessenger.of(context).hideCurrentMaterialBanner();
     _numberController.dispose();
     _amountController.dispose();
     _descriptionController.dispose();
@@ -158,12 +169,14 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                                 Navigator.pop(ctx);
                               }
                             } catch (e) {
-                              ScaffoldMessenger.of(ctx).showSnackBar(
-                                SnackBar(
-                                  content: Text('Error al crear cliente: $e'),
-                                  backgroundColor: const Color(0xFFEF4444),
-                                ),
-                              );
+                              if (ctx.mounted) {
+                                ScaffoldMessenger.of(ctx).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Error al crear cliente: $e'),
+                                    backgroundColor: const Color(0xFFEF4444),
+                                  ),
+                                );
+                              }
                             } finally {
                               setModalState(() => bottomSheetLoading = false);
                             }
@@ -223,6 +236,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       ref.invalidate(invoicesProvider(null));
       
       if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentMaterialBanner();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Factura creada exitosamente.'),
@@ -254,8 +268,29 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
         title: const Text('Nueva Factura'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            ScaffoldMessenger.of(context).hideCurrentMaterialBanner();
+            context.pop();
+          },
         ),
+        actions: [
+          IconButton(
+            onPressed: _isScanning
+                ? null
+                : () => _handleScanTap(),
+            icon: _isScanning
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Icon(Icons.document_scanner_outlined),
+            tooltip: 'Escanear factura',
+          ),
+        ],
       ),
       body: Stack(
         children: [
@@ -373,9 +408,10 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                         // Number
                         TextFormField(
                           controller: _numberController,
-                          decoration: const InputDecoration(
-                            labelText: 'Número de factura',
-                            prefixIcon: Icon(Icons.tag_rounded, size: 20),
+                          decoration: _fieldDecoration(
+                            'Número de factura',
+                            _wasScanned(_scanResult?.invoiceNumber),
+                            prefixIcon: const Icon(Icons.tag_rounded, size: 20),
                             hintText: 'FAC-0001',
                           ),
                           validator: (val) => val == null || val.trim().isEmpty ? 'Ingresa el número' : null,
@@ -391,9 +427,10 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                               child: TextFormField(
                                 controller: _amountController,
                                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                                decoration: const InputDecoration(
-                                  labelText: 'Monto',
-                                  prefixIcon: Icon(Icons.attach_money_rounded, size: 20),
+                                decoration: _fieldDecoration(
+                                  'Monto',
+                                  _wasScanned(_scanResult?.amount),
+                                  prefixIcon: const Icon(Icons.attach_money_rounded, size: 20),
                                   hintText: '0.00',
                                 ),
                                 validator: (val) {
@@ -410,9 +447,11 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                                 value: _currency,
                                 isExpanded: true,
                                 isDense: true,
-                                decoration: const InputDecoration(
-                                  labelText: 'Moneda',
-                                  contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                                decoration: _fieldDecoration(
+                                  'Moneda',
+                                  _wasScanned(_scanResult?.currency),
+                                ).copyWith(
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
                                 ),
                                 items: _currencies.map((c) {
                                   return DropdownMenuItem(
@@ -442,7 +481,12 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                             decoration: BoxDecoration(
                               color: const Color(0xFF1E293B),
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: const Color(0xFF334155)),
+                              border: Border.all(
+                                color: _wasScanned(_scanResult?.dueDate)
+                                    ? Colors.green.shade400
+                                    : const Color(0xFF334155),
+                                width: _wasScanned(_scanResult?.dueDate) ? 1.5 : 1.0,
+                              ),
                             ),
                             child: Row(
                               children: [
@@ -466,6 +510,10 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                                     ],
                                   ),
                                 ),
+                                if (_wasScanned(_scanResult?.dueDate)) ...[
+                                  Icon(Icons.auto_awesome, size: 16, color: Colors.green.shade500),
+                                  const SizedBox(width: 8),
+                                ],
                                 const Icon(Icons.arrow_drop_down_rounded, color: Color(0xFF94A3B8)),
                               ],
                             ),
@@ -477,8 +525,10 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                         TextFormField(
                           controller: _descriptionController,
                           maxLines: 3,
-                          decoration: const InputDecoration(
-                            labelText: 'Descripción / Concepto (Opcional)',
+                          decoration: _fieldDecoration(
+                            'Descripción / Concepto (Opcional)',
+                            _wasScanned(_scanResult?.description),
+                          ).copyWith(
                             alignLabelWithHint: true,
                           ),
                         ),
@@ -524,6 +574,43 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                     ),
                   ),
                 ),
+                if (_scanResult != null && _scanResult!.warnings.isNotEmpty) ...[
+                  Container(
+                    margin: const EdgeInsets.only(top: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.amber.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Colors.amber.shade200,
+                      ),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.warning_amber,
+                          size: 16,
+                          color: Colors.amber.shade700,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'No se encontró: ${_scanResult!.warnings.join(', ')}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.amber.shade900,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
                 const SizedBox(height: 28),
 
                 // Submit Button
@@ -560,5 +647,228 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
         ],
       ),
     );
+  }
+
+  // --- Helper Methods & Scanning Actions ---
+  InputDecoration _fieldDecoration(
+    String label,
+    bool wasScanned, {
+    Widget? prefixIcon,
+    String? hintText,
+  }) {
+    return InputDecoration(
+      labelText: label,
+      prefixIcon: prefixIcon,
+      hintText: hintText,
+      enabledBorder: wasScanned
+          ? OutlineInputBorder(
+              borderSide: BorderSide(
+                color: Colors.green.shade400,
+                width: 1.5,
+              ),
+            )
+          : null,
+      suffixIcon: wasScanned
+          ? Icon(
+              Icons.auto_awesome,
+              size: 16,
+              color: Colors.green.shade500,
+            )
+          : null,
+    );
+  }
+
+  Future<ImageSource?> _showSourcePicker(BuildContext context) async {
+    return showModalBottomSheet<ImageSource>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(20),
+        ),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text(
+                'Seleccionar imagen de factura',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Tomar foto'),
+              onTap: () => Navigator.pop(ctx, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Elegir de galería'),
+              onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleScanTap() async {
+    final source = await _showSourcePicker(context);
+    if (source == null) return;
+
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+      source: source,
+      imageQuality: 85,
+      maxWidth: 1920,
+    );
+    if (picked == null) return;
+
+    if (!mounted) return;
+    setState(() => _isScanning = true);
+
+    try {
+      final service = InvoiceScanService();
+      final result = await service.scanImage(
+        File(picked.path),
+      );
+      if (!mounted) return;
+      _applyScannedData(result);
+    } on DioException catch (e) {
+      if (!mounted) return;
+      _showScanError(context, _parseDioError(e));
+    } catch (e) {
+      if (!mounted) return;
+      _showScanError(
+        context,
+        'Error inesperado al procesar la imagen.',
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isScanning = false);
+      }
+    }
+  }
+
+  void _applyScannedData(InvoiceScanResult result) {
+    if (result.hasEnoughData) {
+      setState(() {
+        _scanResult = result;
+
+        if (result.invoiceNumber != null) {
+          _numberController.text = result.invoiceNumber!;
+        }
+        if (result.amount != null) {
+          _amountController.text = result.amount!.toStringAsFixed(2);
+        }
+        if (result.currency != null) {
+          _currency = result.currency!;
+        }
+        if (result.dueDate != null) {
+          _dueDate = DateTime.tryParse(result.dueDate!);
+        }
+        if (result.description != null) {
+          _descriptionController.text = result.description!;
+        }
+      });
+
+      if (result.clientName != null || result.clientEmail != null) {
+        final clients = ref.read(clientsProvider).valueOrNull ?? [];
+        ClientModel? match;
+        for (final c in clients) {
+          if (result.clientEmail != null &&
+              c.email.toLowerCase() == result.clientEmail!.toLowerCase()) {
+            match = c;
+            break;
+          }
+        }
+        if (match == null) {
+          for (final c in clients) {
+            if (result.clientName != null &&
+                c.name.toLowerCase().contains(result.clientName!.toLowerCase())) {
+              match = c;
+              break;
+            }
+          }
+        }
+        if (match != null) {
+          setState(() => _selectedClientId = match!.id);
+        }
+      }
+
+      _showSuccessBanner(result);
+    } else {
+      _showLowConfidenceSnackbar(result);
+    }
+  }
+
+  void _showSuccessBanner(InvoiceScanResult result) {
+    ScaffoldMessenger.of(context).showMaterialBanner(
+      MaterialBanner(
+        content: Text(
+          '✓ Datos extraídos con ${result.confidenceLabel}. Revisa y confirma antes de guardar.',
+          style: const TextStyle(color: Colors.black87),
+        ),
+        backgroundColor: Colors.green.shade100,
+        leading: Icon(
+          Icons.check_circle,
+          color: Colors.green.shade700,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => ScaffoldMessenger.of(context).hideCurrentMaterialBanner(),
+            child: const Text('OK', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLowConfidenceSnackbar(InvoiceScanResult result) {
+    final msg = result.warnings.isNotEmpty
+        ? 'No se encontró: ${result.warnings.join(', ')}. Completa el formulario manualmente.'
+        : 'No se pudieron extraer los datos. Intenta con una imagen más clara.';
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: Colors.orange.shade700,
+        duration: const Duration(seconds: 5),
+      ),
+    );
+  }
+
+  void _showScanError(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red.shade700,
+      ),
+    );
+  }
+
+  String _parseDioError(DioException e) {
+    final statusCode = e.response?.statusCode;
+    final detail = e.response?.data?['detail'] as String?;
+
+    switch (statusCode) {
+      case 400:
+        return detail ?? 'Imagen inválida.';
+      case 401:
+        return 'Sesión expirada. Vuelve a iniciar sesión.';
+      case 413:
+        return 'La imagen es demasiado grande (máximo 10 MB).';
+      default:
+        if (e.type == DioExceptionType.sendTimeout ||
+            e.type == DioExceptionType.receiveTimeout) {
+          return 'La solicitud tardó demasiado. Intenta de nuevo.';
+        }
+        return 'Error al procesar la imagen. Intenta de nuevo.';
+    }
   }
 }
