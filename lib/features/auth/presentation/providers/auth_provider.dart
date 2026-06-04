@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/storage/secure_storage.dart';
 import '../../data/models/user_model.dart';
 import '../../data/repositories/auth_repository.dart';
 
@@ -17,6 +18,11 @@ class AuthNotifier extends StateNotifier<AsyncValue<UserModel?>> {
 
   Future<void> _init() async {
     try {
+      final hasToken = await SecureStorage.hasToken();
+      if (!hasToken) {
+        state = const AsyncValue.data(null);
+        return;
+      }
       final user = await _repo.getMe();
       state = AsyncValue.data(user);
     } catch (_) {
