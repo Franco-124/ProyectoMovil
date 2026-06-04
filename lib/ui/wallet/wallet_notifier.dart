@@ -1,29 +1,46 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/models/transaction_model.dart';
+import '../../core/supabase/supabase_client.dart';
+import '../../data/repositories/wallet_repository.dart';
 import 'wallet_state.dart';
 
 class WalletNotifier extends StateNotifier<WalletState> {
-  WalletNotifier() : super(const WalletIdle()) {
+  final WalletRepository _repo;
+  WalletNotifier(this._repo) : super(const WalletIdle()) {
     _loadData();
   }
 
   Future<void> _loadData() async {
     state = const WalletLoading();
-    await Future.delayed(const Duration(milliseconds: 1500));
+    final userId = supabase.auth.currentUser?.id;
+    if (userId == null) {
+      state = const WalletError('Usuario no autenticado.');
+      return;
+    }
 
-    state = const WalletSuccess(
-      balance: 85.50,
-      transactions: [
-        TransactionModel(id:'1', title:'Viaje al Centro',        date:'20 Oct 2023', amount:15.00, isExpense:true),
-        TransactionModel(id:'2', title:'Recarga de saldo',       date:'18 Oct 2023', amount:50.00, isExpense:false),
-        TransactionModel(id:'3', title:'Viaje a la Universidad', date:'15 Oct 2023', amount:12.50, isExpense:true),
-      ],
-    );
+    try {
+      final balance = await _repo.getBalance(userId);
+      final txs = await _repo.getTransactions(userId);
+      state = WalletSuccess(balance: balance, transactions: txs);
+    } catch (e) {
+      state = WalletError(e.toString());
+    }
   }
 
-  void onReloadPressed() => _loadData();
+  Future<void> onReloadPressed() async {
+    final userId = supabase.auth.currentUser?.id;
+    if (userId == null) return;
+
+    state = const WalletLoading();
+    try {
+      // Recargar $50.00 por defecto de forma simulada
+      await _repo.reloadBalance(userId, 50.00);
+      await _loadData();
+    } catch (e) {
+      state = WalletError(e.toString());
+    }
+  }
 }
 
 final walletProvider = StateNotifierProvider.autoDispose<WalletNotifier, WalletState>(
-  (ref) => WalletNotifier(),
+  (ref) => WalletNotifier(WalletRepository()),
 );

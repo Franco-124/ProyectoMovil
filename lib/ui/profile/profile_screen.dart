@@ -29,8 +29,10 @@ class ProfileScreen extends ConsumerWidget {
           )
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+      body: state.isLoading
+          ? const Center(child: CircularProgressIndicator(color: AppColors.accentTeal))
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
         child: Column(
           children: [
             // Avatar + nombre

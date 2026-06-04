@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:latlong2/latlong.dart';
 import '../../core/router/app_router.dart';
 import '../../core/theme/app_colors.dart';
+import 'bikes_provider.dart';
 import 'home_notifier.dart';
 import 'home_state.dart';
 
@@ -11,6 +14,7 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final bikesAsync = ref.watch(bikesProvider);
 
     ref.listen<HomeState>(homeProvider, (_, next) {
       switch (next) {
@@ -58,7 +62,7 @@ class HomeScreen extends ConsumerWidget {
         ],
       ),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -94,7 +98,7 @@ class HomeScreen extends ConsumerWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
 
               // Unlock button
               ElevatedButton.icon(
@@ -102,7 +106,70 @@ class HomeScreen extends ConsumerWidget {
                 label: const Text('Unlock E-Bike'),
                 onPressed: () => ref.read(homeProvider.notifier).onUnlockPressed(),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
+
+              // Interactive E-Bike Map
+              const Text('Nearby E-Bikes',
+                  style: TextStyle(color: AppColors.textWhite,
+                      fontWeight: FontWeight.bold, fontSize: 16)),
+              const SizedBox(height: 12),
+              Container(
+                height: 260,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.accentTeal.withValues(alpha: 0.3)),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: bikesAsync.when(
+                    data: (bikes) => FlutterMap(
+                      options: const MapOptions(
+                        initialCenter: LatLng(6.244203, -75.571431),
+                        initialZoom: 14.5,
+                      ),
+                      children: [
+                        TileLayer(
+                          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          userAgentPackageName: 'com.example.clase21.ebike_rentals',
+                        ),
+                        MarkerLayer(
+                          markers: bikes.map((bike) {
+                            final lat = (bike['latitude'] as num).toDouble();
+                            final lng = (bike['longitude'] as num).toDouble();
+                            return Marker(
+                              point: LatLng(lat, lng),
+                              width: 40,
+                              height: 40,
+                              child: GestureDetector(
+                                onTap: () => _showBikeDetails(context, bike, ref),
+                                child: Container(
+                                  decoration: const BoxDecoration(
+                                    color: AppColors.accentTeal,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.directions_bike,
+                                    color: AppColors.bgDark,
+                                    size: 20,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ),
+                    loading: () => const Center(
+                      child: CircularProgressIndicator(color: AppColors.accentTeal),
+                    ),
+                    error: (err, _) => Center(
+                      child: Text('Error al cargar mapa: $err',
+                          style: const TextStyle(color: Colors.red)),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
 
               // Grid de acciones
               const Text('Find a Ride',
@@ -133,6 +200,72 @@ class HomeScreen extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+  void _showBikeDetails(BuildContext context, Map<String, dynamic> bike, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.bgNavy,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        final battery = bike['battery_level'] as int;
+        return Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    bike['code'] as String? ?? 'E-BIKE',
+                    style: const TextStyle(
+                      color: AppColors.textWhite,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Icon(
+                        battery > 50 ? Icons.battery_charging_full : Icons.battery_alert,
+                        color: battery > 20 ? AppColors.statusCompleted : AppColors.statusCancelled,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '$battery%',
+                        style: const TextStyle(color: AppColors.textWhite, fontSize: 16),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Costo base: \$1.50 + \$0.15/min',
+                style: TextStyle(color: AppColors.textGray),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('¡Bicicleta ${bike['code']} desbloqueada! Viaje iniciado.'),
+                      backgroundColor: AppColors.statusCompleted,
+                    ),
+                  );
+                },
+                child: const Text('DESBLOQUEAR Y COMENZAR VIAJE'),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
