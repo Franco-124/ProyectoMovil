@@ -408,13 +408,16 @@ class _CreateBudgetBottomSheetState extends ConsumerState<CreateBudgetBottomShee
               if (_isMonthly) ...[
                 DropdownButtonFormField<int>(
                   value: _selectedMonth,
+                  isExpanded: true,
+                  isDense: true,
                   decoration: const InputDecoration(
                     labelText: 'Selecciona el mes',
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                   ),
                   items: List.generate(12, (index) {
                     return DropdownMenuItem<int>(
                       value: index + 1,
-                      child: Text(widget.monthsList[index], style: const TextStyle(color: Colors.white)),
+                      child: Text(widget.monthsList[index], style: const TextStyle(color: Colors.white, fontSize: 14)),
                     );
                   }),
                   onChanged: (val) {
@@ -545,13 +548,16 @@ class _CreateBudgetBottomSheetState extends ConsumerState<CreateBudgetBottomShee
                     flex: 2,
                     child: DropdownButtonFormField<String>(
                       value: _selectedCurrency,
+                      isExpanded: true,
+                      isDense: true,
                       decoration: const InputDecoration(
                         labelText: 'Moneda',
+                        contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
                       ),
                       items: _currencies.map((currency) {
                         return DropdownMenuItem<String>(
                           value: currency,
-                          child: Text(currency, style: const TextStyle(color: Colors.white)),
+                          child: Text(currency, style: const TextStyle(color: Colors.white, fontSize: 14)),
                         );
                       }).toList(),
                       onChanged: (val) {

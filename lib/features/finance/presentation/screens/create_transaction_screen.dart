@@ -282,13 +282,16 @@ class _CreateTransactionScreenState extends ConsumerState<CreateTransactionScree
                     flex: 2,
                     child: DropdownButtonFormField<String>(
                       value: _selectedCurrency,
+                      isExpanded: true,
+                      isDense: true,
                       decoration: const InputDecoration(
                         labelText: 'Moneda',
+                        contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
                       ),
                       items: _currencies.map((currency) {
                         return DropdownMenuItem<String>(
                           value: currency,
-                          child: Text(currency, style: const TextStyle(color: Colors.white)),
+                          child: Text(currency, style: const TextStyle(color: Colors.white, fontSize: 14)),
                         );
                       }).toList(),
                       onChanged: (val) {
