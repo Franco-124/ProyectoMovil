@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -734,9 +733,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
 
     try {
       final service = InvoiceScanService();
-      final result = await service.scanImage(
-        File(picked.path),
-      );
+      final result = await service.scanImage(picked);
       if (!mounted) return;
       _applyScannedData(result);
     } on DioException catch (e) {
