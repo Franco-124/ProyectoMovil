@@ -22,7 +22,7 @@ class FinancialSummary {
       totalIncome: (json['total_income'] as num?)?.toDouble() ?? 0.0,
       totalExpenses: (json['total_expenses'] as num?)?.toDouble() ?? 0.0,
       balance: (json['balance'] as num?)?.toDouble() ?? 0.0,
-      currency: json['currency']?.toString() ?? 'USD',
+      currency: json['currency']?.toString() ?? 'COP',
       period: json['period']?.toString() ?? '',
     );
   }
@@ -56,7 +56,7 @@ class CategorySummary {
       category: CategoryModel.fromJson(json['category'] as Map<String, dynamic>),
       total: (json['total'] as num?)?.toDouble() ?? 0.0,
       percentage: (json['percentage'] as num?)?.toDouble() ?? 0.0,
-      currency: json['currency']?.toString() ?? 'USD',
+      currency: json['currency']?.toString() ?? 'COP',
       transactionsCount: json['transactions_count'] as int? ?? 0,
     );
   }

@@ -160,7 +160,7 @@ class DashboardScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
                 StatCard(
                   label: 'Monto pendiente total',
-                  value: '\$${totalPending.toStringAsFixed(2)} USD',
+                  value: '\$${totalPending.toStringAsFixed(0)} COP',
                   icon: Icons.attach_money_rounded,
                   color: const Color(0xFF22C55E),
                   fullWidth: true,

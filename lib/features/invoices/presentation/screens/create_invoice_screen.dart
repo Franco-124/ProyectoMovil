@@ -23,7 +23,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
   String? _selectedClientId;
   final _numberController = TextEditingController();
   final _amountController = TextEditingController();
-  String _currency = 'USD';
+  String _currency = 'COP';
   final _descriptionController = TextEditingController();
   DateTime? _dueDate;
   bool _remindersActive = true;
@@ -34,7 +34,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
   bool _wasScanned(dynamic value) =>
       _scanResult != null && value != null;
 
-  final List<String> _currencies = ['USD', 'EUR', 'COP', 'MXN', 'ARS'];
+  final List<String> _currencies = ['COP'];
 
   @override
   void dispose() {

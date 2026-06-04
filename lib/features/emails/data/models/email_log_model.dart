@@ -12,7 +12,7 @@ class EmailLogInvoice {
   factory EmailLogInvoice.fromJson(Map<String, dynamic> json) => EmailLogInvoice(
     invoiceNumber: json['invoice_number']?.toString() ?? '',
     amount: double.tryParse(json['amount']?.toString() ?? '') ?? 0.0,
-    currency: json['currency']?.toString() ?? 'USD',
+    currency: json['currency']?.toString() ?? 'COP',
   );
 }
 

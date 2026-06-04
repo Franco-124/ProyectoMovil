@@ -281,9 +281,9 @@ class _CreateBudgetBottomSheetState extends ConsumerState<CreateBudgetBottomShee
   int _selectedMonth = DateTime.now().month;
   CategoryModel? _selectedCategory; // null = General
   final _amountController = TextEditingController();
-  String _selectedCurrency = 'USD';
+  String _selectedCurrency = 'COP';
 
-  final List<String> _currencies = ['USD', 'COP', 'EUR', 'MXN', 'ARS', 'BRL', 'CLP', 'PEN'];
+  final List<String> _currencies = ['COP'];
 
   @override
   void dispose() {

@@ -50,7 +50,7 @@ class FinanceRepository {
     required String type,
     required double amount,
     required DateTime date,
-    String currency = 'USD',
+    String currency = 'COP',
     String? description,
   }) async {
     final dateStr = '${date.year}-'
@@ -93,7 +93,7 @@ class FinanceRepository {
     required int year,
     int? month,
     String? categoryId,
-    String currency = 'USD',
+    String currency = 'COP',
   }) async {
     final Map<String, dynamic> body = {
       'amount': amount,

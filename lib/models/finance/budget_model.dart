@@ -26,7 +26,7 @@ class BudgetModel {
     return BudgetModel(
       id: json['id']?.toString() ?? '',
       amount: double.parse(json['amount'].toString()),
-      currency: json['currency']?.toString() ?? 'USD',
+      currency: json['currency']?.toString() ?? 'COP',
       periodType: json['period_type']?.toString() ?? 'monthly',
       year: json['year'] as int? ?? DateTime.now().year,
       month: json['month'] as int?,

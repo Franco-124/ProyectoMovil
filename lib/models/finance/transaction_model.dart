@@ -33,7 +33,7 @@ class TransactionModel {
       id: json['id']?.toString() ?? '',
       type: json['type']?.toString() ?? 'expense',
       amount: double.parse(json['amount'].toString()),
-      currency: json['currency']?.toString() ?? 'USD',
+      currency: json['currency']?.toString() ?? 'COP',
       description: json['description']?.toString(),
       date: DateTime.parse(json['date'] as String),
       isAutomatic: json['is_automatic'] as bool? ?? false,

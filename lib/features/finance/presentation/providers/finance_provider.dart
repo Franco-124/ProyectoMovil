@@ -92,7 +92,7 @@ class TransactionNotifier extends StateNotifier<AsyncValue<void>> {
     required String type,
     required double amount,
     required DateTime date,
-    String currency = 'USD',
+    String currency = 'COP',
     String? description,
   }) async {
     state = const AsyncValue.loading();
@@ -146,7 +146,7 @@ class BudgetNotifier extends StateNotifier<AsyncValue<void>> {
     required int year,
     int? month,
     String? categoryId,
-    String currency = 'USD',
+    String currency = 'COP',
   }) async {
     state = const AsyncValue.loading();
     try {

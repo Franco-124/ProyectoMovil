@@ -17,12 +17,12 @@ class _CreateTransactionScreenState extends ConsumerState<CreateTransactionScree
   String _type = 'expense'; // 'expense' or 'income'
   CategoryModel? _selectedCategory;
   final _amountController = TextEditingController();
-  String _selectedCurrency = 'USD';
+  String _selectedCurrency = 'COP';
   DateTime _selectedDate = DateTime.now();
   final _dateController = TextEditingController();
   final _descriptionController = TextEditingController();
 
-  final List<String> _currencies = ['USD', 'COP', 'EUR', 'MXN', 'ARS', 'BRL', 'CLP', 'PEN'];
+  final List<String> _currencies = ['COP'];
 
   @override
   void initState() {

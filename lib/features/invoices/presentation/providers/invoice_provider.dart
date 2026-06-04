@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/invoice_model.dart';
 import '../../data/repositories/invoice_repository.dart';
@@ -40,7 +40,7 @@ class InvoiceScanNotifier
   InvoiceScanNotifier(this._service)
       : super(const AsyncValue.data(null));
 
-  Future<void> scanImage(File imageFile) async {
+  Future<void> scanImage(XFile imageFile) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(
       () => _service.scanImage(imageFile),

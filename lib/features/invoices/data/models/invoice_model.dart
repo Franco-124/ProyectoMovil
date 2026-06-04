@@ -30,7 +30,7 @@ class InvoiceModel {
       id: json['id']?.toString() ?? '',
       invoiceNumber: json['invoice_number']?.toString() ?? '',
       amount: double.tryParse(json['amount']?.toString() ?? '') ?? 0.0,
-      currency: json['currency']?.toString() ?? 'USD',
+      currency: json['currency']?.toString() ?? 'COP',
       dueDate: json['due_date']?.toString() ?? '',
       status: json['status']?.toString() ?? 'pending',
       description: json['description']?.toString(),
