@@ -542,7 +542,7 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
                     Text('Error al cargar clientes: $e', style: const TextStyle(color: Color(0xFFF87171))),
                     const SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: () => ref.refresh(clientsProvider),
+                      onPressed: () => ref.invalidate(clientsProvider),
                       child: const Text('Reintentar'),
                     ),
                   ],
