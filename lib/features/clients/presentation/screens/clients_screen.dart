@@ -155,10 +155,16 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
                       Expanded(
                         child: DropdownButtonFormField<String>(
                           value: language,
-                          decoration: const InputDecoration(labelText: 'Idioma'),
+                          isExpanded: true,
+                          isDense: true,
+                          style: const TextStyle(fontSize: 12, color: Colors.white),
+                          decoration: const InputDecoration(
+                            labelText: 'Idioma',
+                            contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                          ),
                           items: const [
-                            DropdownMenuItem(value: 'es', child: Text('Español')),
-                            DropdownMenuItem(value: 'en', child: Text('Inglés')),
+                            DropdownMenuItem(value: 'es', child: Text('Español', style: TextStyle(fontSize: 12))),
+                            DropdownMenuItem(value: 'en', child: Text('Inglés', style: TextStyle(fontSize: 12))),
                           ],
                           onChanged: (val) => setModalState(() => language = val!),
                         ),
@@ -167,11 +173,17 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
                       Expanded(
                         child: DropdownButtonFormField<String>(
                           value: tone,
-                          decoration: const InputDecoration(labelText: 'Tono'),
+                          isExpanded: true,
+                          isDense: true,
+                          style: const TextStyle(fontSize: 12, color: Colors.white),
+                          decoration: const InputDecoration(
+                            labelText: 'Tono',
+                            contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                          ),
                           items: const [
-                            DropdownMenuItem(value: 'formal', child: Text('Formal')),
-                            DropdownMenuItem(value: 'semi-formal', child: Text('S-Formal')),
-                            DropdownMenuItem(value: 'informal', child: Text('Informal')),
+                            DropdownMenuItem(value: 'formal', child: Text('Formal', style: TextStyle(fontSize: 12))),
+                            DropdownMenuItem(value: 'semi-formal', child: Text('S-Formal', style: TextStyle(fontSize: 12))),
+                            DropdownMenuItem(value: 'informal', child: Text('Informal', style: TextStyle(fontSize: 12))),
                           ],
                           onChanged: (val) => setModalState(() => tone = val!),
                         ),
@@ -180,11 +192,17 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
                       Expanded(
                         child: DropdownButtonFormField<String>(
                           value: treatment,
-                          decoration: const InputDecoration(labelText: 'Trato'),
+                          isExpanded: true,
+                          isDense: true,
+                          style: const TextStyle(fontSize: 12, color: Colors.white),
+                          decoration: const InputDecoration(
+                            labelText: 'Trato',
+                            contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                          ),
                           items: const [
-                            DropdownMenuItem(value: 'nombre', child: Text('Nombre')),
-                            DropdownMenuItem(value: 'usted', child: Text('Usted')),
-                            DropdownMenuItem(value: 'tu', child: Text('Tú')),
+                            DropdownMenuItem(value: 'nombre', child: Text('Nombre', style: TextStyle(fontSize: 12))),
+                            DropdownMenuItem(value: 'usted', child: Text('Usted', style: TextStyle(fontSize: 12))),
+                            DropdownMenuItem(value: 'tu', child: Text('Tú', style: TextStyle(fontSize: 12))),
                           ],
                           onChanged: (val) => setModalState(() => treatment = val!),
                         ),
@@ -365,10 +383,16 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
                       Expanded(
                         child: DropdownButtonFormField<String>(
                           value: language,
-                          decoration: const InputDecoration(labelText: 'Idioma'),
+                          isExpanded: true,
+                          isDense: true,
+                          style: const TextStyle(fontSize: 12, color: Colors.white),
+                          decoration: const InputDecoration(
+                            labelText: 'Idioma',
+                            contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                          ),
                           items: const [
-                            DropdownMenuItem(value: 'es', child: Text('Español')),
-                            DropdownMenuItem(value: 'en', child: Text('Inglés')),
+                            DropdownMenuItem(value: 'es', child: Text('Español', style: TextStyle(fontSize: 12))),
+                            DropdownMenuItem(value: 'en', child: Text('Inglés', style: TextStyle(fontSize: 12))),
                           ],
                           onChanged: (val) => setModalState(() => language = val!),
                         ),
@@ -377,11 +401,17 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
                       Expanded(
                         child: DropdownButtonFormField<String>(
                           value: tone,
-                          decoration: const InputDecoration(labelText: 'Tono'),
+                          isExpanded: true,
+                          isDense: true,
+                          style: const TextStyle(fontSize: 12, color: Colors.white),
+                          decoration: const InputDecoration(
+                            labelText: 'Tono',
+                            contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                          ),
                           items: const [
-                            DropdownMenuItem(value: 'formal', child: Text('Formal')),
-                            DropdownMenuItem(value: 'semi-formal', child: Text('S-Formal')),
-                            DropdownMenuItem(value: 'informal', child: Text('Informal')),
+                            DropdownMenuItem(value: 'formal', child: Text('Formal', style: TextStyle(fontSize: 12))),
+                            DropdownMenuItem(value: 'semi-formal', child: Text('S-Formal', style: TextStyle(fontSize: 12))),
+                            DropdownMenuItem(value: 'informal', child: Text('Informal', style: TextStyle(fontSize: 12))),
                           ],
                           onChanged: (val) => setModalState(() => tone = val!),
                         ),
@@ -390,11 +420,17 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
                       Expanded(
                         child: DropdownButtonFormField<String>(
                           value: treatment,
-                          decoration: const InputDecoration(labelText: 'Trato'),
+                          isExpanded: true,
+                          isDense: true,
+                          style: const TextStyle(fontSize: 12, color: Colors.white),
+                          decoration: const InputDecoration(
+                            labelText: 'Trato',
+                            contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                          ),
                           items: const [
-                            DropdownMenuItem(value: 'nombre', child: Text('Nombre')),
-                            DropdownMenuItem(value: 'usted', child: Text('Usted')),
-                            DropdownMenuItem(value: 'tu', child: Text('Tú')),
+                            DropdownMenuItem(value: 'nombre', child: Text('Nombre', style: TextStyle(fontSize: 12))),
+                            DropdownMenuItem(value: 'usted', child: Text('Usted', style: TextStyle(fontSize: 12))),
+                            DropdownMenuItem(value: 'tu', child: Text('Tú', style: TextStyle(fontSize: 12))),
                           ],
                           onChanged: (val) => setModalState(() => treatment = val!),
                         ),
