@@ -154,57 +154,22 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
                   Row(
                     children: [
                       Expanded(
-                        child: DropdownButtonFormField<String>(
+                        child: MiSelectorIdioma(
                           value: language,
-                          isExpanded: true,
-                          isDense: true,
-                          style: const TextStyle(fontSize: 12, color: Colors.white),
-                          decoration: const InputDecoration(
-                            labelText: 'Idioma',
-                            contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                          ),
-                          items: const [
-                            DropdownMenuItem(value: 'es', child: Text('Español', style: TextStyle(fontSize: 12))),
-                            DropdownMenuItem(value: 'en', child: Text('Inglés', style: TextStyle(fontSize: 12))),
-                          ],
                           onChanged: (val) => setModalState(() => language = val!),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: DropdownButtonFormField<String>(
+                        child: MiSelectorTono(
                           value: tone,
-                          isExpanded: true,
-                          isDense: true,
-                          style: const TextStyle(fontSize: 12, color: Colors.white),
-                          decoration: const InputDecoration(
-                            labelText: 'Tono',
-                            contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                          ),
-                          items: const [
-                            DropdownMenuItem(value: 'formal', child: Text('Formal', style: TextStyle(fontSize: 12))),
-                            DropdownMenuItem(value: 'semi-formal', child: Text('S-Formal', style: TextStyle(fontSize: 12))),
-                            DropdownMenuItem(value: 'informal', child: Text('Informal', style: TextStyle(fontSize: 12))),
-                          ],
                           onChanged: (val) => setModalState(() => tone = val!),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: DropdownButtonFormField<String>(
+                        child: MiSelectorTrato(
                           value: treatment,
-                          isExpanded: true,
-                          isDense: true,
-                          style: const TextStyle(fontSize: 12, color: Colors.white),
-                          decoration: const InputDecoration(
-                            labelText: 'Trato',
-                            contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                          ),
-                          items: const [
-                            DropdownMenuItem(value: 'nombre', child: Text('Nombre', style: TextStyle(fontSize: 12))),
-                            DropdownMenuItem(value: 'usted', child: Text('Usted', style: TextStyle(fontSize: 12))),
-                            DropdownMenuItem(value: 'tu', child: Text('Tú', style: TextStyle(fontSize: 12))),
-                          ],
                           onChanged: (val) => setModalState(() => treatment = val!),
                         ),
                       ),
@@ -382,57 +347,22 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
                   Row(
                     children: [
                       Expanded(
-                        child: DropdownButtonFormField<String>(
+                        child: MiSelectorIdioma(
                           value: language,
-                          isExpanded: true,
-                          isDense: true,
-                          style: const TextStyle(fontSize: 12, color: Colors.white),
-                          decoration: const InputDecoration(
-                            labelText: 'Idioma',
-                            contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                          ),
-                          items: const [
-                            DropdownMenuItem(value: 'es', child: Text('Español', style: TextStyle(fontSize: 12))),
-                            DropdownMenuItem(value: 'en', child: Text('Inglés', style: TextStyle(fontSize: 12))),
-                          ],
                           onChanged: (val) => setModalState(() => language = val!),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: DropdownButtonFormField<String>(
+                        child: MiSelectorTono(
                           value: tone,
-                          isExpanded: true,
-                          isDense: true,
-                          style: const TextStyle(fontSize: 12, color: Colors.white),
-                          decoration: const InputDecoration(
-                            labelText: 'Tono',
-                            contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                          ),
-                          items: const [
-                            DropdownMenuItem(value: 'formal', child: Text('Formal', style: TextStyle(fontSize: 12))),
-                            DropdownMenuItem(value: 'semi-formal', child: Text('S-Formal', style: TextStyle(fontSize: 12))),
-                            DropdownMenuItem(value: 'informal', child: Text('Informal', style: TextStyle(fontSize: 12))),
-                          ],
                           onChanged: (val) => setModalState(() => tone = val!),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: DropdownButtonFormField<String>(
+                        child: MiSelectorTrato(
                           value: treatment,
-                          isExpanded: true,
-                          isDense: true,
-                          style: const TextStyle(fontSize: 12, color: Colors.white),
-                          decoration: const InputDecoration(
-                            labelText: 'Trato',
-                            contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                          ),
-                          items: const [
-                            DropdownMenuItem(value: 'nombre', child: Text('Nombre', style: TextStyle(fontSize: 12))),
-                            DropdownMenuItem(value: 'usted', child: Text('Usted', style: TextStyle(fontSize: 12))),
-                            DropdownMenuItem(value: 'tu', child: Text('Tú', style: TextStyle(fontSize: 12))),
-                          ],
                           onChanged: (val) => setModalState(() => treatment = val!),
                         ),
                       ),
@@ -770,6 +700,157 @@ class _ClientListTileCard extends StatelessWidget {
         label,
         style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 10, fontWeight: FontWeight.w500),
       ),
+    );
+  }
+}
+
+class MiSelectorIdioma extends StatelessWidget {
+  final String value;
+  final ValueChanged<String?> onChanged;
+
+  const MiSelectorIdioma({
+    super.key,
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButtonFormField<String>(
+      value: value,
+      isExpanded: true,
+      isDense: true,
+      decoration: const InputDecoration(
+        labelText: 'Idioma',
+        contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+      ),
+      style: const TextStyle(color: Colors.white, fontSize: 13),
+      dropdownColor: const Color(0xFF1E293B),
+      items: const [
+        DropdownMenuItem(
+          value: 'es',
+          child: Text(
+            'Español',
+            style: TextStyle(color: Colors.white, fontSize: 13),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        DropdownMenuItem(
+          value: 'en',
+          child: Text(
+            'Inglés',
+            style: TextStyle(color: Colors.white, fontSize: 13),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+      onChanged: onChanged,
+    );
+  }
+}
+
+class MiSelectorTono extends StatelessWidget {
+  final String value;
+  final ValueChanged<String?> onChanged;
+
+  const MiSelectorTono({
+    super.key,
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButtonFormField<String>(
+      value: value,
+      isExpanded: true,
+      isDense: true,
+      decoration: const InputDecoration(
+        labelText: 'Tono',
+        contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+      ),
+      style: const TextStyle(color: Colors.white, fontSize: 13),
+      dropdownColor: const Color(0xFF1E293B),
+      items: const [
+        DropdownMenuItem(
+          value: 'formal',
+          child: Text(
+            'Formal',
+            style: TextStyle(color: Colors.white, fontSize: 13),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        DropdownMenuItem(
+          value: 'semi-formal',
+          child: Text(
+            'S-Formal',
+            style: TextStyle(color: Colors.white, fontSize: 13),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        DropdownMenuItem(
+          value: 'informal',
+          child: Text(
+            'Informal',
+            style: TextStyle(color: Colors.white, fontSize: 13),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+      onChanged: onChanged,
+    );
+  }
+}
+
+class MiSelectorTrato extends StatelessWidget {
+  final String value;
+  final ValueChanged<String?> onChanged;
+
+  const MiSelectorTrato({
+    super.key,
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButtonFormField<String>(
+      value: value,
+      isExpanded: true,
+      isDense: true,
+      decoration: const InputDecoration(
+        labelText: 'Trato',
+        contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+      ),
+      style: const TextStyle(color: Colors.white, fontSize: 13),
+      dropdownColor: const Color(0xFF1E293B),
+      items: const [
+        DropdownMenuItem(
+          value: 'nombre',
+          child: Text(
+            'Nombre',
+            style: TextStyle(color: Colors.white, fontSize: 13),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        DropdownMenuItem(
+          value: 'usted',
+          child: Text(
+            'Usted',
+            style: TextStyle(color: Colors.white, fontSize: 13),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        DropdownMenuItem(
+          value: 'tu',
+          child: Text(
+            'Tú',
+            style: TextStyle(color: Colors.white, fontSize: 13),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+      onChanged: onChanged,
     );
   }
 }
