@@ -321,14 +321,21 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
 
                             return DropdownButtonFormField<String>(
                               value: _selectedClientId,
-                              hint: const Text('Seleccionar cliente'),
+                              isExpanded: true,
+                              isDense: true,
+                              hint: const Text('Seleccionar cliente', style: TextStyle(fontSize: 14)),
                               decoration: const InputDecoration(
                                 prefixIcon: Icon(Icons.person_outline_rounded, size: 20),
+                                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                               ),
                               items: clients.map((c) {
                                 return DropdownMenuItem(
                                   value: c.id,
-                                  child: Text('${c.name} (${c.email})'),
+                                  child: Text(
+                                    '${c.name} (${c.email})',
+                                    style: const TextStyle(fontSize: 14),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 );
                               }).toList(),
                               onChanged: (val) {
@@ -401,11 +408,17 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                               flex: 2,
                               child: DropdownButtonFormField<String>(
                                 value: _currency,
+                                isExpanded: true,
+                                isDense: true,
                                 decoration: const InputDecoration(
                                   labelText: 'Moneda',
+                                  contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
                                 ),
                                 items: _currencies.map((c) {
-                                  return DropdownMenuItem(value: c, child: Text(c));
+                                  return DropdownMenuItem(
+                                    value: c,
+                                    child: Text(c, style: const TextStyle(fontSize: 14)),
+                                  );
                                 }).toList(),
                                 onChanged: (val) {
                                   if (val != null) {
