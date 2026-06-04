@@ -579,11 +579,15 @@ class _ClientListTileCard extends StatelessWidget {
                       Text(
                         client.name,
                         style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                       const SizedBox(height: 2),
                       Text(
                         client.email,
                         style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                     ],
                   ),
@@ -625,12 +629,12 @@ class _ClientListTileCard extends StatelessWidget {
             
             // Configuration overrides display
             const Divider(color: Color(0xFF334155), height: 24),
-            Row(
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
               children: [
                 _buildSmallConfigBadge('Idioma: ${client.emailLanguage.toUpperCase()}'),
-                const SizedBox(width: 6),
                 _buildSmallConfigBadge('Tono: ${client.emailTone}'),
-                const SizedBox(width: 6),
                 _buildSmallConfigBadge('Trato: ${client.emailTreatment}'),
               ],
             ),
@@ -646,9 +650,13 @@ class _ClientListTileCard extends StatelessWidget {
                     children: [
                       const Icon(Icons.business_rounded, size: 16, color: Color(0xFF64748B)),
                       const SizedBox(width: 8),
-                      Text(
-                        'Empresa: ${client.company!}',
-                        style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+                      Expanded(
+                        child: Text(
+                          'Empresa: ${client.company!}',
+                          style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
                       ),
                     ],
                   ),
@@ -660,9 +668,13 @@ class _ClientListTileCard extends StatelessWidget {
                     children: [
                       const Icon(Icons.rate_review_outlined, size: 16, color: Color(0xFF64748B)),
                       const SizedBox(width: 8),
-                      Text(
-                        'Remitente: ${client.senderName!}',
-                        style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+                      Expanded(
+                        child: Text(
+                          'Remitente: ${client.senderName!}',
+                          style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
                       ),
                     ],
                   ),
