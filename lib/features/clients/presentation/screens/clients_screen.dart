@@ -51,7 +51,7 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
         ref.invalidate(clientsProvider);
         _showSnackBar('Cliente eliminado con éxito.');
       } catch (e) {
-        _showSnackBar('Error al eliminar cliente: $e', isError: true);
+        _showSnackBar(ErrorHandler.getFriendlyMessage(e), isError: true);
       } finally {
         if (mounted) setState(() => _isActionLoading = false);
       }
@@ -224,7 +224,7 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
                                 Navigator.pop(ctx);
                               }
                             } catch (e) {
-                              _showSnackBar('Error al crear cliente: $e', isError: true);
+                              _showSnackBar(ErrorHandler.getFriendlyMessage(e), isError: true);
                             } finally {
                               setModalState(() {
                                 _isActionLoading = false;
@@ -417,7 +417,7 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
                                 Navigator.pop(ctx);
                               }
                             } catch (e) {
-                              _showSnackBar('Error al actualizar cliente: $e', isError: true);
+                              _showSnackBar(ErrorHandler.getFriendlyMessage(e), isError: true);
                             } finally {
                               setModalState(() {
                                 _isActionLoading = false;

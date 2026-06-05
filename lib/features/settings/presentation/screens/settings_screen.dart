@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:payremind/core/network/error_handler.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -12,7 +13,6 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  bool _mockEmailNotifications = true;
   bool _mockPushNotifications = false;
 
   void _showMockDialog(String title, String content) {
@@ -41,7 +41,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
       body: userAsync.when(
         loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF6366F1))),
-        error: (e, _) => Center(child: Text('Error al cargar perfil: $e')),
+        error: (e, _) => Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Text(
+              ErrorHandler.getFriendlyMessage(e),
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Color(0xFFF87171)),
+            ),
+          ),
+        ),
         data: (user) {
           if (user == null) {
             return const Center(child: Text('Sesión no encontrada. Por favor, inicia sesión de nuevo.'));
@@ -75,11 +84,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             Text(
                               user.fullName,
                               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 2),
                             Text(
                               user.email,
                               style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 8),
                             Container(
@@ -187,19 +200,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               Card(
                 child: Column(
                   children: [
-                    SwitchListTile(
-                      secondary: const Icon(Icons.email_outlined, color: Color(0xFF6366F1)),
-                      title: const Text('Notificar por Correo'),
-                      subtitle: const Text('Recibe un correo cuando un cliente reciba un recordatorio.', style: TextStyle(fontSize: 12)),
-                      value: _mockEmailNotifications,
-                      activeColor: const Color(0xFF6366F1),
-                      onChanged: (val) {
-                        setState(() {
-                          _mockEmailNotifications = val;
-                        });
-                      },
-                    ),
-                    const Divider(color: Color(0xFF334155), height: 1),
                     SwitchListTile(
                       secondary: const Icon(Icons.phonelink_ring_rounded, color: Color(0xFF6366F1)),
                       title: const Text('Notificaciones Push'),

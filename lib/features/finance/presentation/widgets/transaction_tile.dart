@@ -18,7 +18,7 @@ class TransactionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final formattedAmount = NumberFormat.currency(
       symbol: '\$',
-      decimalDigits: 2,
+      decimalDigits: 0,
     ).format(transaction.amount);
 
     final formattedDate = DateFormat('d MMM yyyy').format(transaction.date);

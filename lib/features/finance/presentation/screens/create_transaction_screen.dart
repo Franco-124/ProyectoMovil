@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:payremind/core/network/error_handler.dart';
 import '../providers/finance_provider.dart';
 import '../widgets/category_icon_widget.dart';
 import '../../../../models/finance/category_model.dart';
@@ -118,10 +119,11 @@ class _CreateTransactionScreenState extends ConsumerState<CreateTransactionScree
       );
       Navigator.of(context).pop(true);
     } else {
-      final error = ref.read(transactionNotifierProvider).error?.toString() ?? 'Error desconocido';
+      final errorObj = ref.read(transactionNotifierProvider).error;
+      final errorMsg = errorObj != null ? ErrorHandler.getFriendlyMessage(errorObj) : 'Error desconocido';
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error: $error'),
+          content: Text(errorMsg),
           backgroundColor: const Color(0xFFEF4444),
         ),
       );
@@ -190,7 +192,7 @@ class _CreateTransactionScreenState extends ConsumerState<CreateTransactionScree
                 constraints: const BoxConstraints(maxHeight: 220),
                 child: categoriesAsync.when(
                   loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF6366F1))),
-                  error: (e, _) => Center(child: Text('Error al cargar categorías: $e', style: const TextStyle(color: Color(0xFFEF4444)))),
+                  error: (e, _) => Center(child: Text(ErrorHandler.getFriendlyMessage(e), style: const TextStyle(color: Color(0xFFEF4444)))),
                   data: (categories) {
                     if (categories.isEmpty) {
                       return const Center(child: Text('No hay categorías disponibles', style: TextStyle(color: Color(0xFF94A3B8))));

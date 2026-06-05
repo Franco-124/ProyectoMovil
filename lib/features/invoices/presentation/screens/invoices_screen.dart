@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:payremind/core/network/error_handler.dart';
 import '../providers/invoice_provider.dart';
 import '../../../../shared/widgets/status_badge.dart';
 import '../../data/models/invoice_model.dart';
@@ -50,7 +51,7 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error al enviar recordatorio: $e'),
+            content: Text(ErrorHandler.getFriendlyMessage(e)),
             backgroundColor: const Color(0xFFEF4444),
             behavior: SnackBarBehavior.floating,
           ),
@@ -128,7 +129,7 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
                           const Icon(Icons.error_outline_rounded, color: Color(0xFFEF4444), size: 48),
                           const SizedBox(height: 16),
                           Text(
-                            'Error al cargar facturas: $e',
+                            ErrorHandler.getFriendlyMessage(e),
                             textAlign: TextAlign.center,
                             style: const TextStyle(color: Color(0xFFF87171)),
                           ),
@@ -204,7 +205,7 @@ class _InvoiceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final formattedAmount = NumberFormat.currency(
       symbol: '\$',
-      decimalDigits: 2,
+      decimalDigits: 0,
     ).format(invoice.amount);
 
     DateTime? parsedDate;
@@ -243,29 +244,34 @@ class _InvoiceCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'CLIENTE',
-                        style: TextStyle(
-                          color: Color(0xFF64748B),
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'CLIENTE',
+                          style: TextStyle(
+                            color: Color(0xFF64748B),
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        invoice.client.name,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
+                        const SizedBox(height: 2),
+                        Text(
+                          invoice.client.name,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
+                  const SizedBox(width: 16),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
@@ -285,6 +291,8 @@ class _InvoiceCard extends StatelessWidget {
                           color: Color(0xFF94A3B8),
                           fontSize: 13,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
@@ -294,40 +302,46 @@ class _InvoiceCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    '$formattedAmount ${invoice.currency}',
-                    style: const TextStyle(
-                      color: Color(0xFF22C55E),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
+                  Expanded(
+                    child: Text(
+                      '$formattedAmount ${invoice.currency}',
+                      style: const TextStyle(
+                        color: Color(0xFF22C55E),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  Row(
-                    children: [
-                      if (invoice.status == 'pending' || invoice.status == 'overdue') ...[
-                        TextButton.icon(
-                          onPressed: onSendReminder,
-                          icon: const Icon(Icons.send_rounded, size: 14),
-                          label: const Text('Recordatorio', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                          style: TextButton.styleFrom(
-                            foregroundColor: const Color(0xFF818CF8),
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            backgroundColor: const Color(0xFF6366F1).withOpacity(0.1),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                      ],
-                      const Text(
-                        'Detalles',
-                        style: TextStyle(color: Color(0xFF6366F1), fontSize: 13, fontWeight: FontWeight.bold),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  if (invoice.status == 'pending' || invoice.status == 'overdue') ...[
+                    TextButton.icon(
+                      onPressed: onSendReminder,
+                      icon: const Icon(Icons.send_rounded, size: 14),
+                      label: const Text('Recordatorio', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      style: TextButton.styleFrom(
+                        foregroundColor: const Color(0xFF818CF8),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        backgroundColor: const Color(0xFF6366F1).withOpacity(0.1),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
-                      const SizedBox(width: 4),
-                      const Icon(Icons.chevron_right_rounded, color: Color(0xFF6366F1), size: 18),
-                    ],
+                    ),
+                    const SizedBox(width: 12),
+                  ],
+                  const Text(
+                    'Detalles',
+                    style: TextStyle(color: Color(0xFF6366F1), fontSize: 13, fontWeight: FontWeight.bold),
                   ),
+                  const SizedBox(width: 4),
+                  const Icon(Icons.chevron_right_rounded, color: Color(0xFF6366F1), size: 18),
                 ],
               ),
             ],

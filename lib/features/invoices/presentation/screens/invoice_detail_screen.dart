@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:payremind/core/network/error_handler.dart';
 import '../providers/invoice_provider.dart';
 import '../../../../shared/widgets/status_badge.dart';
 
@@ -41,7 +42,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
       _showSnackBar('Recordatorio enviado a ${result.to} (Tono: $toneLabel).');
       ref.invalidate(invoiceDetailProvider(widget.id));
     } catch (e) {
-      _showSnackBar('Error al enviar recordatorio: $e', isError: true);
+      _showSnackBar(ErrorHandler.getFriendlyMessage(e), isError: true);
     } finally {
       if (mounted) setState(() => _isActionLoading = false);
     }
@@ -54,7 +55,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
       ref.invalidate(invoiceDetailProvider(widget.id));
       _showSnackBar('Configuración de recordatorios actualizada.');
     } catch (e) {
-      _showSnackBar('Error al actualizar recordatorios: $e', isError: true);
+      _showSnackBar(ErrorHandler.getFriendlyMessage(e), isError: true);
     } finally {
       if (mounted) setState(() => _isActionLoading = false);
     }
@@ -68,7 +69,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
       ref.invalidate(invoicesProvider(null));
       _showSnackBar('Estado de la factura actualizado.');
     } catch (e) {
-      _showSnackBar('Error al actualizar estado: $e', isError: true);
+      _showSnackBar(ErrorHandler.getFriendlyMessage(e), isError: true);
     } finally {
       if (mounted) setState(() => _isActionLoading = false);
     }
@@ -117,12 +118,12 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
                 try {
                   await ref.read(invoiceRepositoryProvider).deleteInvoice(widget.id);
                   ref.invalidate(invoicesProvider(null));
-                  if (mounted) {
+                  if (context.mounted) {
                     _showSnackBar('Factura eliminada con éxito.');
                     context.pop();
                   }
                 } catch (e) {
-                  _showSnackBar('Error al eliminar factura: $e', isError: true);
+                  _showSnackBar(ErrorHandler.getFriendlyMessage(e), isError: true);
                 } finally {
                   if (mounted) setState(() => _isActionLoading = false);
                 }
@@ -140,7 +141,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
             children: [
               const Icon(Icons.error_outline_rounded, color: Color(0xFFEF4444), size: 48),
               const SizedBox(height: 16),
-              Text('Error al cargar la factura: $e', style: const TextStyle(color: Color(0xFFF87171))),
+              Text(ErrorHandler.getFriendlyMessage(e), style: const TextStyle(color: Color(0xFFF87171))),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => ref.refresh(invoiceDetailProvider(widget.id)),
@@ -152,7 +153,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
         data: (invoice) {
           final formattedAmount = NumberFormat.currency(
             symbol: '\$',
-            decimalDigits: 2,
+            decimalDigits: 0,
           ).format(invoice.amount);
 
           DateTime? parsedDate;
@@ -186,14 +187,19 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
-                                  'Factura #${invoice.invoiceNumber}',
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                                Expanded(
+                                  child: Text(
+                                    'Factura #${invoice.invoiceNumber}',
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
+                                const SizedBox(width: 8),
                                 StatusBadge(invoice.status),
                               ],
                             ),
@@ -259,10 +265,14 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
                               title: Text(
                                 invoice.client.name,
                                 style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                               subtitle: Text(
                                 invoice.client.email,
                                 style: const TextStyle(color: Color(0xFF94A3B8)),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             if (invoice.client.company != null && invoice.client.company!.isNotEmpty) ...[
@@ -271,9 +281,13 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
                                 children: [
                                   const Icon(Icons.business_rounded, size: 16, color: Color(0xFF64748B)),
                                   const SizedBox(width: 8),
-                                  Text(
-                                    invoice.client.company!,
-                                    style: const TextStyle(color: Color(0xFF94A3B8)),
+                                  Expanded(
+                                    child: Text(
+                                      invoice.client.company!,
+                                      style: const TextStyle(color: Color(0xFF94A3B8)),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -304,7 +318,15 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text('Fecha de Vencimiento', style: TextStyle(color: Colors.white)),
+                                const Expanded(
+                                  child: Text(
+                                    'Fecha de Vencimiento',
+                                    style: TextStyle(color: Colors.white),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
                                 Text(
                                   formattedDate,
                                   style: const TextStyle(color: Color(0xFFF43F5E), fontWeight: FontWeight.bold),
@@ -315,21 +337,30 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text('Recordatorios Automáticos', style: TextStyle(color: Colors.white)),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      isReminderActive 
-                                          ? 'Activo (Intervalos: ${intervals.join(", ")} días)' 
-                                          : 'Desactivado',
-                                      style: TextStyle(
-                                        color: isReminderActive ? const Color(0xFF22C55E) : const Color(0xFF64748B),
-                                        fontSize: 12,
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Recordatorios Automáticos',
+                                        style: TextStyle(color: Colors.white),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                    ),
-                                  ],
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        isReminderActive 
+                                            ? 'Activo (Intervalos: ${intervals.join(", ")} días)' 
+                                            : 'Desactivado',
+                                        style: TextStyle(
+                                          color: isReminderActive ? const Color(0xFF22C55E) : const Color(0xFF64748B),
+                                          fontSize: 12,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                                 Switch(
                                   value: isReminderActive,

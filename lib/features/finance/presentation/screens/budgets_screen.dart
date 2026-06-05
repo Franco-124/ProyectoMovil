@@ -198,7 +198,7 @@ class _BudgetsScreenState extends ConsumerState<BudgetsScreen> {
                           ? 'Mensual - ${_months[budget.month! - 1]} ${budget.year}'
                           : 'Anual - ${budget.year}';
 
-                      final amountFormatted = NumberFormat.currency(symbol: '\$', decimalDigits: 2).format(budget.amount);
+                      final amountFormatted = NumberFormat.currency(symbol: '\$', decimalDigits: 0).format(budget.amount);
 
                       return Card(
                         margin: const EdgeInsets.symmetric(vertical: 6),
@@ -224,6 +224,8 @@ class _BudgetsScreenState extends ConsumerState<BudgetsScreen> {
                           title: Text(
                             categoryName,
                             style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           subtitle: Padding(
                             padding: const EdgeInsets.only(top: 4.0),
@@ -233,11 +235,15 @@ class _BudgetsScreenState extends ConsumerState<BudgetsScreen> {
                                 Text(
                                   periodText,
                                   style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
                                   'Límite: $amountFormatted ${budget.currency}',
                                   style: const TextStyle(color: Color(0xFFE2E8F0), fontSize: 13, fontWeight: FontWeight.w500),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ],
                             ),
@@ -441,7 +447,7 @@ class _CreateBudgetBottomSheetState extends ConsumerState<CreateBudgetBottomShee
                 constraints: const BoxConstraints(maxHeight: 140),
                 child: categoriesAsync.when(
                   loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF6366F1))),
-                  error: (e, _) => Center(child: Text('Error: $e', style: const TextStyle(color: Color(0xFFEF4444)))),
+                  error: (e, _) => Center(child: Text(ErrorHandler.getFriendlyMessage(e), style: const TextStyle(color: Color(0xFFEF4444)))),
                   data: (categories) {
                     // Combine a dummy Category representing "General/Global" at the start
                     final allItems = [

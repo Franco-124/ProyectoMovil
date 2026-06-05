@@ -37,6 +37,15 @@ class AppTheme {
       selectedItemColor: _primaryColor,
       unselectedItemColor: Color(0xFF64748B),
       type: BottomNavigationBarType.fixed,
+      selectedLabelStyle: TextStyle(
+        fontSize: 10,
+        fontWeight: FontWeight.bold,
+        letterSpacing: 0.1,
+      ),
+      unselectedLabelStyle: TextStyle(
+        fontSize: 9,
+        letterSpacing: 0.1,
+      ),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,

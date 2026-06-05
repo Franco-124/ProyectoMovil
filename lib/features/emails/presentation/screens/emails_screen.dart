@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:payremind/core/network/error_handler.dart';
 import '../providers/email_provider.dart';
 import '../../data/models/email_log_model.dart';
 
@@ -94,7 +95,7 @@ class EmailsScreen extends ConsumerWidget {
                 const Icon(Icons.error_outline_rounded, color: Color(0xFFEF4444), size: 48),
                 const SizedBox(height: 16),
                 Text(
-                  'Error al cargar historial: $e',
+                  ErrorHandler.getFriendlyMessage(e),
                   textAlign: TextAlign.center,
                   style: const TextStyle(color: Color(0xFFF87171)),
                 ),
@@ -233,9 +234,13 @@ class EmailsScreen extends ConsumerWidget {
                           Row(
                             children: [
                               const Text('Factura: ', style: TextStyle(color: Color(0xFF64748B), fontSize: 13)),
-                              Text(
-                                '#${log.invoice.invoiceNumber} (\$${log.invoice.amount.toStringAsFixed(2)} ${log.invoice.currency})',
-                                style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13, fontWeight: FontWeight.w500),
+                              Expanded(
+                                child: Text(
+                                  '#${log.invoice.invoiceNumber} (\$${log.invoice.amount.toStringAsFixed(0)} ${log.invoice.currency})',
+                                  style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13, fontWeight: FontWeight.w500),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
                             ],
                           ),

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:payremind/core/network/error_handler.dart';
 import '../providers/invoice_provider.dart';
 import '../../../clients/presentation/providers/client_provider.dart';
 import '../../../clients/data/models/client_model.dart';
@@ -38,7 +39,9 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
 
   @override
   void dispose() {
-    ScaffoldMessenger.of(context).hideCurrentMaterialBanner();
+    try {
+      ScaffoldMessenger.of(context).clearMaterialBanners();
+    } catch (_) {}
     _numberController.dispose();
     _amountController.dispose();
     _descriptionController.dispose();
@@ -171,7 +174,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                               if (ctx.mounted) {
                                 ScaffoldMessenger.of(ctx).showSnackBar(
                                   SnackBar(
-                                    content: Text('Error al crear cliente: $e'),
+                                    content: Text(ErrorHandler.getFriendlyMessage(e)),
                                     backgroundColor: const Color(0xFFEF4444),
                                   ),
                                 );
@@ -248,7 +251,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error al crear factura: $e'),
+            content: Text(ErrorHandler.getFriendlyMessage(e)),
             backgroundColor: const Color(0xFFEF4444),
           ),
         );
@@ -743,7 +746,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       if (!mounted) return;
       _showScanError(
         context,
-        'Error inesperado al procesar la imagen.',
+        ErrorHandler.getFriendlyMessage(e),
       );
     } finally {
       if (mounted) {
@@ -761,7 +764,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
           _numberController.text = result.invoiceNumber!;
         }
         if (result.amount != null) {
-          _amountController.text = result.amount!.toStringAsFixed(2);
+          _amountController.text = result.amount!.toStringAsFixed(0);
         }
         if (result.currency != null) {
           _currency = result.currency!;
@@ -861,11 +864,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       case 413:
         return 'La imagen es demasiado grande (máximo 10 MB).';
       default:
-        if (e.type == DioExceptionType.sendTimeout ||
-            e.type == DioExceptionType.receiveTimeout) {
-          return 'La solicitud tardó demasiado. Intenta de nuevo.';
-        }
-        return 'Error al procesar la imagen. Intenta de nuevo.';
+        return ErrorHandler.getFriendlyMessage(e);
     }
   }
 }

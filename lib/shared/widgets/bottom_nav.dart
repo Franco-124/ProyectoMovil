@@ -27,6 +27,7 @@ class BottomNavShell extends StatelessWidget {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
         onTap: (index) {
+          ScaffoldMessenger.of(context).clearMaterialBanners();
           switch (index) {
             case 0:
               context.go('/dashboard');
@@ -51,7 +52,7 @@ class BottomNavShell extends StatelessWidget {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.dashboard_rounded),
-            label: 'Dashboard',
+            label: 'Inicio',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.receipt_long_rounded),

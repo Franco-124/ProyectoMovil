@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:payremind/core/network/error_handler.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../invoices/presentation/providers/invoice_provider.dart';
 import '../../../../shared/widgets/stat_card.dart';
@@ -89,7 +90,7 @@ class DashboardScreen extends ConsumerWidget {
                 const Icon(Icons.error_outline_rounded, color: Color(0xFFEF4444), size: 48),
                 const SizedBox(height: 16),
                 Text(
-                  'Error al cargar dashboard: $e',
+                  ErrorHandler.getFriendlyMessage(e),
                   textAlign: TextAlign.center,
                   style: const TextStyle(color: Color(0xFFF87171)),
                 ),
@@ -243,7 +244,7 @@ class _InvoiceListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final formattedAmount = NumberFormat.currency(
       symbol: '\$',
-      decimalDigits: 2,
+      decimalDigits: 0,
     ).format(invoice.amount);
 
     DateTime? parsedDate;
@@ -290,15 +291,19 @@ class _InvoiceListTile extends StatelessWidget {
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 6),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                invoice.client.name,
-                style: const TextStyle(
-                  color: Color(0xFF94A3B8),
-                  fontSize: 13,
+              Expanded(
+                child: Text(
+                  invoice.client.name,
+                  style: const TextStyle(
+                    color: Color(0xFF94A3B8),
+                    fontSize: 13,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
               ),
+              const SizedBox(width: 8),
               Text(
                 'Vence: $formattedDate',
                 style: const TextStyle(
@@ -309,9 +314,8 @@ class _InvoiceListTile extends StatelessWidget {
             ],
           ),
         ),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               '$formattedAmount ${invoice.currency}',
@@ -321,6 +325,7 @@ class _InvoiceListTile extends StatelessWidget {
                 fontSize: 15,
               ),
             ),
+            const SizedBox(width: 4),
             const Icon(Icons.chevron_right_rounded, color: Color(0xFF475569), size: 20),
           ],
         ),

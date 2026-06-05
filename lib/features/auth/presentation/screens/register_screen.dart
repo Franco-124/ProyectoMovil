@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:payremind/core/network/error_handler.dart';
 import '../providers/auth_provider.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -43,7 +44,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       final authState = ref.read(authProvider);
       if (authState.hasError) {
         setState(() {
-          _errorMessage = authState.error.toString().replaceAll('Exception: ', '');
+          _errorMessage = ErrorHandler.getFriendlyMessage(authState.error!);
         });
       } else if (authState.value != null) {
         if (mounted) {
@@ -52,7 +53,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       }
     } catch (e) {
       setState(() {
-        _errorMessage = e.toString().replaceAll('Exception: ', '');
+        _errorMessage = ErrorHandler.getFriendlyMessage(e);
       });
     }
   }

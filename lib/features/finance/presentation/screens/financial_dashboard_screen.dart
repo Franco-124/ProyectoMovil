@@ -146,9 +146,9 @@ class _FinancialDashboardScreenState extends ConsumerState<FinancialDashboardScr
               data: (data) {
                 final summary = data.summary;
                 
-                final formattedIncome = NumberFormat.currency(symbol: '\$', decimalDigits: 2).format(summary.totalIncome);
-                final formattedExpenses = NumberFormat.currency(symbol: '\$', decimalDigits: 2).format(summary.totalExpenses);
-                final formattedBalance = NumberFormat.currency(symbol: '\$', decimalDigits: 2).format(summary.balance);
+                final formattedIncome = NumberFormat.currency(symbol: '\$', decimalDigits: 0).format(summary.totalIncome);
+                final formattedExpenses = NumberFormat.currency(symbol: '\$', decimalDigits: 0).format(summary.totalExpenses);
+                final formattedBalance = NumberFormat.currency(symbol: '\$', decimalDigits: 0).format(summary.balance);
 
                 final balanceColor = summary.balance >= 0 ? const Color(0xFF6366F1) : const Color(0xFFEF4444);
 
@@ -205,7 +205,7 @@ class _FinancialDashboardScreenState extends ConsumerState<FinancialDashboardScr
                             padding: const EdgeInsets.all(16.0),
                             child: Column(
                               children: data.expensesByCategory.map((categorySummary) {
-                                final totalFormatted = NumberFormat.currency(symbol: '\$', decimalDigits: 2).format(categorySummary.total);
+                                final totalFormatted = NumberFormat.currency(symbol: '\$', decimalDigits: 0).format(categorySummary.total);
                                 return Padding(
                                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                                   child: Row(
@@ -219,10 +219,15 @@ class _FinancialDashboardScreenState extends ConsumerState<FinancialDashboardScr
                                             Row(
                                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                               children: [
-                                                Text(
-                                                  categorySummary.category.name,
-                                                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 13),
+                                                Expanded(
+                                                  child: Text(
+                                                    categorySummary.category.name,
+                                                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 13),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
                                                 ),
+                                                const SizedBox(width: 8),
                                                 Text(
                                                   '$totalFormatted ${categorySummary.currency}',
                                                   style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
@@ -382,10 +387,15 @@ class _FinancialDashboardScreenState extends ConsumerState<FinancialDashboardScr
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  '$spentFormatted de $limitFormatted ${status.budget.currency}',
-                  style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
+                Expanded(
+                  child: Text(
+                    '$spentFormatted de $limitFormatted ${status.budget.currency}',
+                    style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
+                const SizedBox(width: 8),
                 Text(
                   '${status.percentageUsed.toStringAsFixed(0)}%',
                   style: TextStyle(color: progressColor, fontWeight: FontWeight.bold, fontSize: 12),
