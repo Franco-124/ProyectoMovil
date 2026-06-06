@@ -14,14 +14,24 @@ class TransactionTile extends StatelessWidget {
     this.onTap,
   });
 
+  String _subtitleText() {
+    final extra = transaction.extraData;
+    if (extra != null && extra.isNotEmpty) {
+      final firstValue = extra.values.first?.toString() ?? '';
+      if (firstValue.isNotEmpty) return firstValue;
+    }
+    if (transaction.description != null && transaction.description!.isNotEmpty) {
+      return transaction.description!;
+    }
+    return DateFormat('d MMM yyyy').format(transaction.date);
+  }
+
   @override
   Widget build(BuildContext context) {
     final formattedAmount = NumberFormat.currency(
       symbol: '\$',
       decimalDigits: 0,
     ).format(transaction.amount);
-
-    final formattedDate = DateFormat('d MMM yyyy').format(transaction.date);
 
     final isIncome = transaction.isIncome;
     final amountColor = isIncome ? const Color(0xFF22C55E) : const Color(0xFFEF4444);
@@ -62,9 +72,7 @@ class TransactionTile extends StatelessWidget {
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 4.0),
           child: Text(
-            transaction.description != null && transaction.description!.isNotEmpty
-                ? transaction.description!
-                : formattedDate,
+            _subtitleText(),
             style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

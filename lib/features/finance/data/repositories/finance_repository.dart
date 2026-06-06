@@ -3,7 +3,7 @@ import '../../../../models/finance/category_model.dart';
 import '../../../../models/finance/transaction_model.dart';
 import '../../../../models/finance/budget_model.dart';
 import '../../../../models/finance/dashboard_model.dart';
-import '../../../../models/finance/transaction_from_scan_request.dart';
+
 
 class FinanceRepository {
   final _dio = ApiClient.instance;
@@ -53,6 +53,7 @@ class FinanceRepository {
     required DateTime date,
     String currency = 'COP',
     String? description,
+    Map<String, dynamic>? extraData,
   }) async {
     final dateStr = '${date.year}-'
         '${date.month.toString().padLeft(2, '0')}-'
@@ -66,6 +67,7 @@ class FinanceRepository {
       'date': dateStr,
     };
     if (description != null) body['description'] = description;
+    if (extraData != null && extraData.isNotEmpty) body['extra_data'] = extraData;
 
     final res = await _dio.post('/finance/transactions', data: body);
     return TransactionModel.fromJson(res.data as Map<String, dynamic>);
@@ -127,13 +129,4 @@ class FinanceRepository {
     return FinancialDashboard.fromJson(res.data as Map<String, dynamic>);
   }
 
-  Future<TransactionModel> createTransactionFromScan(
-    TransactionFromScanRequest request,
-  ) async {
-    final res = await _dio.post(
-      '/finance/transactions/from-scan',
-      data: request.toJson(),
-    );
-    return TransactionModel.fromJson(res.data as Map<String, dynamic>);
-  }
 }

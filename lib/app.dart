@@ -6,7 +6,6 @@ import 'features/auth/presentation/screens/register_screen.dart';
 import 'features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'features/invoices/presentation/screens/invoices_screen.dart';
 import 'features/invoices/presentation/screens/invoice_detail_screen.dart';
-import 'features/invoices/presentation/screens/create_invoice_screen.dart';
 import 'features/invoices/presentation/screens/invoice_emit_screen.dart';
 import 'features/clients/presentation/screens/clients_screen.dart';
 import 'features/emails/presentation/screens/emails_screen.dart';
@@ -48,10 +47,6 @@ final _router = GoRouter(
           path: '/invoices',
           builder: (_, __) => const InvoicesScreen(),
           routes: [
-            GoRoute(
-              path: 'create',
-              builder: (_, __) => const CreateInvoiceScreen(),
-            ),
             GoRoute(
               path: 'emit',
               builder: (_, __) => const InvoiceEmitScreen(),

@@ -115,6 +115,9 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                     itemCount: transactions.length,
                     itemBuilder: (context, index) {
                       final tx = transactions[index];
+                      if (tx.isAutomatic) {
+                        return TransactionTile(transaction: tx);
+                      }
                       return Dismissible(
                         key: Key(tx.id),
                         direction: DismissDirection.endToStart,

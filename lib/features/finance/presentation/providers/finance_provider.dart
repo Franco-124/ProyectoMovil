@@ -1,11 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/repositories/finance_repository.dart';
+import '../../data/services/transaction_scan_service.dart';
+import '../../../../core/network/api_client.dart';
 import '../../../../models/finance/category_model.dart';
 import '../../../../models/finance/transaction_model.dart';
 import '../../../../models/finance/budget_model.dart';
 import '../../../../models/finance/dashboard_model.dart';
 
 final financeRepositoryProvider = Provider<FinanceRepository>((_) => FinanceRepository());
+
+final transactionScanServiceProvider = Provider<TransactionScanService>(
+  (_) => TransactionScanService(ApiClient.instance),
+);
 
 final categoriesProvider = FutureProvider.family<List<CategoryModel>, String?>((ref, type) async {
   final repo = ref.read(financeRepositoryProvider);
@@ -94,6 +100,7 @@ class TransactionNotifier extends StateNotifier<AsyncValue<void>> {
     required DateTime date,
     String currency = 'COP',
     String? description,
+    Map<String, dynamic>? extraData,
   }) async {
     state = const AsyncValue.loading();
     try {
@@ -104,6 +111,7 @@ class TransactionNotifier extends StateNotifier<AsyncValue<void>> {
         date: date,
         currency: currency,
         description: description,
+        extraData: extraData,
       );
       state = const AsyncValue.data(null);
       _ref.invalidate(transactionsProvider);

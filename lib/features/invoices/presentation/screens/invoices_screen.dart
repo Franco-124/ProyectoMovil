@@ -27,42 +27,6 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
     ('cancelled', 'Cancelada'),
   ];
 
-  void _showCreateOptions(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 20, 16, 8),
-              child: Text('Nueva factura', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            ),
-            ListTile(
-              leading: const Icon(Icons.playlist_add_rounded, color: AppColors.primary),
-              title: const Text('Registrar factura'),
-              subtitle: const Text('Trackear una factura que ya existe'),
-              onTap: () {
-                Navigator.pop(ctx);
-                context.push('/invoices/create');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.send_rounded, color: AppColors.income),
-              title: const Text('Emitir factura'),
-              subtitle: const Text('Crear y enviar una factura con PDF al cliente'),
-              onTap: () {
-                Navigator.pop(ctx);
-                context.push('/invoices/emit');
-              },
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
-    );
-  }
-
   Future<void> _sendReminder(String id) async {
     setState(() => _actionLoading = true);
     try {
@@ -97,9 +61,9 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Facturas')),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showCreateOptions(context),
+        onPressed: () => context.push('/invoices/emit'),
         icon:  const Icon(Icons.add_rounded),
-        label: const Text('Nueva factura'),
+        label: const Text('Emitir factura'),
       ),
       body: Stack(
         children: [

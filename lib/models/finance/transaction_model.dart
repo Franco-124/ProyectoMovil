@@ -11,6 +11,7 @@ class TransactionModel {
   final DateTime createdAt;
   final String? invoiceId;
   final CategoryModel category;
+  final Map<String, dynamic>? extraData;
 
   const TransactionModel({
     required this.id,
@@ -23,6 +24,7 @@ class TransactionModel {
     required this.createdAt,
     this.invoiceId,
     required this.category,
+    this.extraData,
   });
 
   bool get isIncome => type == 'income';
@@ -42,6 +44,9 @@ class TransactionModel {
           : DateTime.now(),
       invoiceId: json['invoice_id']?.toString(),
       category: CategoryModel.fromJson(json['category'] as Map<String, dynamic>),
+      extraData: json['extra_data'] != null
+          ? Map<String, dynamic>.from(json['extra_data'] as Map)
+          : null,
     );
   }
 
@@ -69,6 +74,7 @@ class TransactionModel {
     DateTime? createdAt,
     String? invoiceId,
     CategoryModel? category,
+    Map<String, dynamic>? extraData,
   }) {
     return TransactionModel(
       id: id ?? this.id,
@@ -81,6 +87,7 @@ class TransactionModel {
       createdAt: createdAt ?? this.createdAt,
       invoiceId: invoiceId ?? this.invoiceId,
       category: category ?? this.category,
+      extraData: extraData ?? this.extraData,
     );
   }
 }

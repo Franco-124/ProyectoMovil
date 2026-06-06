@@ -5,6 +5,7 @@ class CategoryModel {
   final String? icon;
   final String? color;
   final bool isDefault;
+  final List<String>? scanFields;
 
   const CategoryModel({
     required this.id,
@@ -13,6 +14,7 @@ class CategoryModel {
     this.icon,
     this.color,
     required this.isDefault,
+    this.scanFields,
   });
 
   bool get isIncome => type == 'income';
@@ -26,6 +28,9 @@ class CategoryModel {
       icon: json['icon']?.toString(),
       color: json['color']?.toString(),
       isDefault: json['is_default'] as bool? ?? false,
+      scanFields: (json['scan_fields'] as List?)
+          ?.map((e) => e.toString())
+          .toList(),
     );
   }
 
@@ -45,6 +50,7 @@ class CategoryModel {
     String? icon,
     String? color,
     bool? isDefault,
+    List<String>? scanFields,
   }) {
     return CategoryModel(
       id: id ?? this.id,
@@ -53,6 +59,7 @@ class CategoryModel {
       icon: icon ?? this.icon,
       color: color ?? this.color,
       isDefault: isDefault ?? this.isDefault,
+      scanFields: scanFields ?? this.scanFields,
     );
   }
 }
