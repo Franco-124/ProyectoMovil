@@ -3,6 +3,7 @@ import '../../../../models/finance/category_model.dart';
 import '../../../../models/finance/transaction_model.dart';
 import '../../../../models/finance/budget_model.dart';
 import '../../../../models/finance/dashboard_model.dart';
+import '../../../../models/finance/transaction_from_scan_request.dart';
 
 class FinanceRepository {
   final _dio = ApiClient.instance;
@@ -124,5 +125,15 @@ class FinanceRepository {
       queryParameters: params,
     );
     return FinancialDashboard.fromJson(res.data as Map<String, dynamic>);
+  }
+
+  Future<TransactionModel> createTransactionFromScan(
+    TransactionFromScanRequest request,
+  ) async {
+    final res = await _dio.post(
+      '/finance/transactions/from-scan',
+      data: request.toJson(),
+    );
+    return TransactionModel.fromJson(res.data as Map<String, dynamic>);
   }
 }

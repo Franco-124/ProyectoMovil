@@ -56,4 +56,17 @@ class InvoiceScanResult {
         if (clientEmail != null) 'Email',
         if (description != null) 'Descripción',
       ];
+
+  Map<String, dynamic> toJson() => {
+    'invoice_number': invoiceNumber,
+    'amount': amount,
+    'currency': currency,
+    'due_date': dueDate,
+    'client_name': clientName,
+    'client_email': clientEmail,
+    'description': description,
+    'confidence': confidence,
+    'raw_text': rawText,
+    'warnings': warnings,
+  };
 }

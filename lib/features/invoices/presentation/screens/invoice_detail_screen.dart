@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:payremind/core/network/error_handler.dart';
 import '../providers/invoice_provider.dart';
 import '../../../../shared/widgets/status_badge.dart';
+import 'package:dio/dio.dart';
 
 class InvoiceDetailScreen extends ConsumerStatefulWidget {
   final String id;
@@ -16,6 +17,8 @@ class InvoiceDetailScreen extends ConsumerStatefulWidget {
 
 class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
   bool _isActionLoading = false;
+  bool _loadingPdf = false;
+  String? _invoiceStatus;
 
   void _showSnackBar(String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -87,6 +90,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
           onPressed: () => context.pop(),
         ),
         actions: [
+          if (_invoiceStatus != null && _invoiceStatus != 'paid' && _invoiceStatus != 'cancelled')
           IconButton(
             icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444)),
             tooltip: 'Eliminar Factura',
@@ -151,6 +155,12 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
           ),
         ),
         data: (invoice) {
+          if (_invoiceStatus != invoice.status) {
+            WidgetsBinding.instance.addPostFrameCallback(
+              (_) => setState(() => _invoiceStatus = invoice.status),
+            );
+          }
+
           final formattedAmount = NumberFormat.currency(
             symbol: '\$',
             decimalDigits: 0,
@@ -333,42 +343,44 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
                                 ),
                               ],
                             ),
-                            const Divider(color: Color(0xFF334155), height: 24),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        'Recordatorios Automáticos',
-                                        style: TextStyle(color: Colors.white),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        isReminderActive 
-                                            ? 'Activo (Intervalos: ${intervals.join(", ")} días)' 
-                                            : 'Desactivado',
-                                        style: TextStyle(
-                                          color: isReminderActive ? const Color(0xFF22C55E) : const Color(0xFF64748B),
-                                          fontSize: 12,
+                            if (invoice.status != 'paid' && invoice.status != 'cancelled') ...[
+                              const Divider(color: Color(0xFF334155), height: 24),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'Recordatorios Automáticos',
+                                          style: TextStyle(color: Colors.white),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          isReminderActive
+                                              ? 'Activo (Intervalos: ${intervals.join(", ")} días)'
+                                              : 'Desactivado',
+                                          style: TextStyle(
+                                            color: isReminderActive ? const Color(0xFF22C55E) : const Color(0xFF64748B),
+                                            fontSize: 12,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                Switch(
-                                  value: isReminderActive,
-                                  activeColor: const Color(0xFF6366F1),
-                                  onChanged: _isActionLoading ? null : (_) => _toggleReminders(),
-                                ),
-                              ],
-                            ),
+                                  Switch(
+                                    value: isReminderActive,
+                                    activeThumbColor: const Color(0xFF6366F1),
+                                    onChanged: _isActionLoading ? null : (_) => _toggleReminders(),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ],
                         ),
                       ),
@@ -386,17 +398,50 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    ElevatedButton.icon(
-                      onPressed: _isActionLoading ? null : _sendReminder,
-                      icon: const Icon(Icons.send_rounded, size: 18),
-                      label: const Text('Enviar Recordatorio Manual Ahora'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6366F1),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                    if (invoice.items != null && invoice.items!.isNotEmpty) ...[
+                      ElevatedButton.icon(
+                        icon: _loadingPdf
+                            ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                            : const Icon(Icons.picture_as_pdf_rounded, size: 18),
+                        label: const Text('Descargar PDF'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF334155),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        onPressed: _loadingPdf || _isActionLoading ? null : () async {
+                          setState(() => _loadingPdf = true);
+                          try {
+                            await ref.read(invoiceEmitServiceProvider).openInvoicePdf(invoice.id, invoice.invoiceNumber);
+                          } on DioException catch (e) {
+                            final detail = e.response?.data?['detail'] as String?;
+                            if (e.response?.statusCode == 400 && detail == 'Esta factura no tiene ítems') {
+                              _showSnackBar('Esta factura no tiene ítems para generar el PDF.', isError: true);
+                            } else {
+                              _showSnackBar(ErrorHandler.getFriendlyMessage(e), isError: true);
+                            }
+                          } catch (e) {
+                            if (mounted) _showSnackBar('No se pudo abrir el PDF.', isError: true);
+                          } finally {
+                            if (mounted) setState(() => _loadingPdf = false);
+                          }
+                        },
                       ),
-                    ),
-                    const SizedBox(height: 12),
+                      const SizedBox(height: 12),
+                    ],
+                    if (invoice.status != 'paid' && invoice.status != 'cancelled') ...[
+                      ElevatedButton.icon(
+                        onPressed: _isActionLoading ? null : _sendReminder,
+                        icon: const Icon(Icons.send_rounded, size: 18),
+                        label: const Text('Enviar Recordatorio Manual Ahora'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF6366F1),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
                     Row(
                       children: [
                         Expanded(

@@ -3,9 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/invoice_model.dart';
 import '../../data/repositories/invoice_repository.dart';
 import '../../data/services/invoice_scan_service.dart';
+import '../../data/services/invoice_emit_service.dart';
 import '../../../../models/invoice_scan_result.dart';
 
 final invoiceRepositoryProvider = Provider((_) => InvoiceRepository());
+
+final invoiceEmitServiceProvider = Provider((_) => InvoiceEmitService());
 
 final invoicesProvider = FutureProvider.family<List<InvoiceModel>, String?>(
   (ref, status) async {

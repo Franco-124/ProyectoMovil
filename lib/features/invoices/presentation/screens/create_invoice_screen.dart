@@ -10,6 +10,8 @@ import '../../../clients/presentation/providers/client_provider.dart';
 import '../../../clients/data/models/client_model.dart';
 import '../../../../models/invoice_scan_result.dart';
 import '../../data/services/invoice_scan_service.dart';
+import '../../../finance/presentation/providers/finance_provider.dart';
+import '../../../../models/finance/transaction_from_scan_request.dart';
 
 class CreateInvoiceScreen extends ConsumerStatefulWidget {
   const CreateInvoiceScreen({super.key});
@@ -22,7 +24,6 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
   final _formKey = GlobalKey<FormState>();
   
   String? _selectedClientId;
-  final _numberController = TextEditingController();
   final _amountController = TextEditingController();
   String _currency = 'COP';
   final _descriptionController = TextEditingController();
@@ -42,7 +43,6 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
     try {
       ScaffoldMessenger.of(context).clearMaterialBanners();
     } catch (_) {}
-    _numberController.dispose();
     _amountController.dispose();
     _descriptionController.dispose();
     super.dispose();
@@ -227,7 +227,6 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       final formattedDueDate = DateFormat('yyyy-MM-dd').format(_dueDate!);
       await ref.read(invoiceRepositoryProvider).createInvoice(
             clientId: _selectedClientId!,
-            invoiceNumber: _numberController.text.trim(),
             amount: double.parse(_amountController.text.trim()),
             currency: _currency,
             dueDate: formattedDueDate,
@@ -357,7 +356,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                             }
 
                             return DropdownButtonFormField<String>(
-                              value: _selectedClientId,
+                              initialValue: _selectedClientId,
                               isExpanded: true,
                               isDense: true,
                               hint: const Text('Seleccionar cliente', style: TextStyle(fontSize: 14)),
@@ -407,19 +406,6 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        // Number
-                        TextFormField(
-                          controller: _numberController,
-                          decoration: _fieldDecoration(
-                            'Número de factura',
-                            _wasScanned(_scanResult?.invoiceNumber),
-                            prefixIcon: const Icon(Icons.tag_rounded, size: 20),
-                            hintText: 'FAC-0001',
-                          ),
-                          validator: (val) => val == null || val.trim().isEmpty ? 'Ingresa el número' : null,
-                        ),
-                        const SizedBox(height: 16),
-                        
                         // Amount and Currency Row
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -446,7 +432,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                             Expanded(
                               flex: 2,
                               child: DropdownButtonFormField<String>(
-                                value: _currency,
+                                initialValue: _currency,
                                 isExpanded: true,
                                 isDense: true,
                                 decoration: _fieldDecoration(
@@ -565,7 +551,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                         ),
                         Switch(
                           value: _remindersActive,
-                          activeColor: const Color(0xFF6366F1),
+                          activeThumbColor: const Color(0xFF6366F1),
                           onChanged: (val) {
                             setState(() {
                               _remindersActive = val;
@@ -612,6 +598,20 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
+                ],
+                if (_scanResult != null) ...[
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    icon: const Icon(Icons.account_balance_wallet_outlined, size: 18),
+                    label: const Text('Registrar como transacción financiera'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      side: const BorderSide(color: Color(0xFF6366F1)),
+                      foregroundColor: const Color(0xFF6366F1),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: () => _showScanToTransactionSheet(_scanResult!),
+                  ),
                 ],
                 const SizedBox(height: 28),
 
@@ -760,9 +760,6 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       setState(() {
         _scanResult = result;
 
-        if (result.invoiceNumber != null) {
-          _numberController.text = result.invoiceNumber!;
-        }
         if (result.amount != null) {
           _amountController.text = result.amount!.toStringAsFixed(0);
         }
@@ -852,6 +849,18 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
     );
   }
 
+  void _showScanToTransactionSheet(InvoiceScanResult scanResult) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF1E293B),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => _ScanToTransactionSheet(scanResult: scanResult),
+    );
+  }
+
   String _parseDioError(DioException e) {
     final statusCode = e.response?.statusCode;
     final detail = e.response?.data?['detail'] as String?;
@@ -866,5 +875,264 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       default:
         return ErrorHandler.getFriendlyMessage(e);
     }
+  }
+}
+
+// ── Scan → Transaction Bottom Sheet ──────────────────────────────────────────
+
+class _ScanToTransactionSheet extends ConsumerStatefulWidget {
+  final InvoiceScanResult scanResult;
+  const _ScanToTransactionSheet({required this.scanResult});
+
+  @override
+  ConsumerState<_ScanToTransactionSheet> createState() => _ScanToTransactionSheetState();
+}
+
+class _ScanToTransactionSheetState extends ConsumerState<_ScanToTransactionSheet> {
+  String _type = 'income';
+  String? _selectedCategoryId;
+  late TextEditingController _amountController;
+  late TextEditingController _descController;
+  String _currency = 'COP';
+  DateTime? _date;
+  bool _isLoading = false;
+  String? _amountError;
+
+  @override
+  void initState() {
+    super.initState();
+    _amountController = TextEditingController(
+      text: widget.scanResult.amount?.toStringAsFixed(0) ?? '',
+    );
+    _descController = TextEditingController(
+      text: widget.scanResult.description ?? '',
+    );
+    _currency = widget.scanResult.currency ?? 'COP';
+    if (widget.scanResult.dueDate != null) {
+      _date = DateTime.tryParse(widget.scanResult.dueDate!);
+    }
+    _date ??= DateTime.now();
+  }
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _descController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final amountText = _amountController.text.trim();
+    if (amountText.isEmpty || double.tryParse(amountText) == null) {
+      setState(() => _amountError = 'Ingresa un monto válido');
+      return;
+    }
+    if (_selectedCategoryId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Selecciona una categoría'), backgroundColor: Color(0xFFEF4444)),
+      );
+      return;
+    }
+
+    setState(() { _isLoading = true; _amountError = null; });
+
+    try {
+      final request = TransactionFromScanRequest(
+        scanResult: widget.scanResult,
+        type: _type,
+        categoryId: _selectedCategoryId!,
+        amount: double.parse(amountText),
+        currency: _currency,
+        description: _descController.text.trim().isEmpty ? null : _descController.text.trim(),
+        date: '${_date!.year}-${_date!.month.toString().padLeft(2, '0')}-${_date!.day.toString().padLeft(2, '0')}',
+      );
+
+      await ref.read(financeRepositoryProvider).createTransactionFromScan(request);
+
+      ref.invalidate(transactionsProvider);
+      ref.invalidate(financialDashboardProvider);
+
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Transacción registrada exitosamente'),
+            backgroundColor: Color(0xFF22C55E),
+          ),
+        );
+      }
+    } on DioException catch (e) {
+      if (!mounted) return;
+      final detail = e.response?.data?['detail'] as String?;
+      if (e.response?.statusCode == 422 && detail != null && detail.contains('amount')) {
+        setState(() { _amountError = 'El monto es requerido'; _isLoading = false; });
+        return;
+      }
+      final msg = e.response?.statusCode == 404
+          ? 'La categoría seleccionada no existe.'
+          : ErrorHandler.getFriendlyMessage(e);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(msg), backgroundColor: const Color(0xFFEF4444)),
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(ErrorHandler.getFriendlyMessage(e)), backgroundColor: const Color(0xFFEF4444)),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final categoriesAsync = ref.watch(categoriesProvider(_type));
+
+    return Padding(
+      padding: EdgeInsets.only(
+        top: 20, left: 20, right: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Registrar como transacción', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white)),
+                IconButton(
+                  icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8)),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            SegmentedButton<String>(
+              segments: const [
+                ButtonSegment(value: 'income', label: Text('Ingreso'), icon: Icon(Icons.trending_up_rounded)),
+                ButtonSegment(value: 'expense', label: Text('Egreso'), icon: Icon(Icons.trending_down_rounded)),
+              ],
+              selected: {_type},
+              onSelectionChanged: (val) => setState(() {
+                _type = val.first;
+                _selectedCategoryId = null;
+              }),
+            ),
+            const SizedBox(height: 16),
+
+            TextField(
+              controller: _amountController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: InputDecoration(
+                labelText: 'Monto',
+                prefixText: '\$ ',
+                errorText: _amountError,
+                prefixIcon: const Icon(Icons.attach_money_rounded, size: 20),
+              ),
+              onChanged: (_) => setState(() => _amountError = null),
+            ),
+            const SizedBox(height: 12),
+
+            Row(
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: _currency,
+                    isDense: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Moneda',
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'COP', child: Text('COP')),
+                      DropdownMenuItem(value: 'USD', child: Text('USD')),
+                    ],
+                    onChanged: (val) { if (val != null) setState(() => _currency = val); },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  flex: 2,
+                  child: InkWell(
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: _date ?? DateTime.now(),
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime.now().add(const Duration(days: 365)),
+                      );
+                      if (picked != null) setState(() => _date = picked);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E293B),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFF334155)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.calendar_today_rounded, size: 16, color: Color(0xFF6366F1)),
+                          const SizedBox(width: 8),
+                          Text(
+                            _date != null ? DateFormat('dd MMM yyyy').format(_date!) : 'Fecha',
+                            style: const TextStyle(color: Colors.white, fontSize: 13),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            TextField(
+              controller: _descController,
+              decoration: const InputDecoration(labelText: 'Descripción (opcional)'),
+              maxLines: 2,
+            ),
+            const SizedBox(height: 12),
+
+            categoriesAsync.when(
+              loading: () => const LinearProgressIndicator(color: Color(0xFF6366F1)),
+              error: (e, _) => const Text('Error al cargar categorías', style: TextStyle(color: Color(0xFFEF4444))),
+              data: (categories) => DropdownButtonFormField<String>(
+                value: _selectedCategoryId,
+                isExpanded: true,
+                isDense: true,
+                decoration: const InputDecoration(
+                  labelText: 'Categoría',
+                  prefixIcon: Icon(Icons.category_outlined, size: 20),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                ),
+                hint: const Text('Seleccionar categoría'),
+                items: categories.map((c) => DropdownMenuItem(
+                  value: c.id,
+                  child: Text(c.name, overflow: TextOverflow.ellipsis),
+                )).toList(),
+                onChanged: (val) => setState(() => _selectedCategoryId = val),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            ElevatedButton(
+              onPressed: _isLoading ? null : _submit,
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: _isLoading
+                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : const Text('Registrar transacción', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

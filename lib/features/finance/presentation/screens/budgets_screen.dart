@@ -413,7 +413,7 @@ class _CreateBudgetBottomSheetState extends ConsumerState<CreateBudgetBottomShee
               // 2. Month picker (if monthly)
               if (_isMonthly) ...[
                 DropdownButtonFormField<int>(
-                  value: _selectedMonth,
+                  initialValue: _selectedMonth,
                   isExpanded: true,
                   isDense: true,
                   decoration: const InputDecoration(
@@ -553,7 +553,7 @@ class _CreateBudgetBottomSheetState extends ConsumerState<CreateBudgetBottomShee
                   Expanded(
                     flex: 2,
                     child: DropdownButtonFormField<String>(
-                      value: _selectedCurrency,
+                      initialValue: _selectedCurrency,
                       isExpanded: true,
                       isDense: true,
                       decoration: const InputDecoration(

@@ -1,4 +1,5 @@
 import '../../../clients/data/models/client_model.dart';
+import 'invoice_item_model.dart';
 
 class InvoiceModel {
   final String id;
@@ -11,6 +12,9 @@ class InvoiceModel {
   final Map<String, dynamic> reminderConfig;
   final ClientModel client;
   final DateTime createdAt;
+  final List<InvoiceItem>? items;
+  final String? issuedDate;
+  final String? sentAt;
 
   const InvoiceModel({
     required this.id,
@@ -23,6 +27,9 @@ class InvoiceModel {
     required this.reminderConfig,
     required this.client,
     required this.createdAt,
+    this.items,
+    this.issuedDate,
+    this.sentAt,
   });
 
   factory InvoiceModel.fromJson(Map<String, dynamic> json) {
@@ -36,9 +43,14 @@ class InvoiceModel {
       description: json['description']?.toString(),
       reminderConfig: Map<String, dynamic>.from(json['reminder_config'] as Map? ?? {}),
       client: ClientModel.fromJson(json['client'] as Map<String, dynamic>),
-      createdAt: json['created_at'] != null 
+      createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'] as String) ?? DateTime.now()
           : DateTime.now(),
+      items: json['items'] != null
+          ? (json['items'] as List).map((i) => InvoiceItem.fromJson(i as Map<String, dynamic>)).toList()
+          : null,
+      issuedDate: json['issued_date']?.toString(),
+      sentAt: json['sent_at']?.toString(),
     );
   }
 
@@ -53,6 +65,9 @@ class InvoiceModel {
     'reminder_config': reminderConfig,
     'client': client.toJson(),
     'created_at': createdAt.toIso8601String(),
+    if (items != null) 'items': items!.map((i) => i.toJson()).toList(),
+    if (issuedDate != null) 'issued_date': issuedDate,
+    if (sentAt != null) 'sent_at': sentAt,
   };
 
   InvoiceModel copyWith({
@@ -66,6 +81,9 @@ class InvoiceModel {
     Map<String, dynamic>? reminderConfig,
     ClientModel? client,
     DateTime? createdAt,
+    List<InvoiceItem>? items,
+    String? issuedDate,
+    String? sentAt,
   }) {
     return InvoiceModel(
       id: id ?? this.id,
@@ -78,6 +96,9 @@ class InvoiceModel {
       reminderConfig: reminderConfig ?? this.reminderConfig,
       client: client ?? this.client,
       createdAt: createdAt ?? this.createdAt,
+      items: items ?? this.items,
+      issuedDate: issuedDate ?? this.issuedDate,
+      sentAt: sentAt ?? this.sentAt,
     );
   }
 }

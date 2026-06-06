@@ -1,5 +1,6 @@
 import '../../../../core/network/api_client.dart';
 import '../models/invoice_model.dart';
+import '../models/invoice_item_model.dart';
 
 class InvoiceRepository {
   final _dio = ApiClient.instance;
@@ -19,7 +20,6 @@ class InvoiceRepository {
 
   Future<InvoiceModel> createInvoice({
     required String clientId,
-    required String invoiceNumber,
     required double amount,
     required String currency,
     required String dueDate,
@@ -28,7 +28,6 @@ class InvoiceRepository {
   }) async {
     final res = await _dio.post('/invoices/', data: {
       'client_id': clientId,
-      'invoice_number': invoiceNumber,
       'amount': amount,
       'currency': currency,
       'due_date': dueDate,
@@ -39,6 +38,25 @@ class InvoiceRepository {
       },
     });
     return InvoiceModel.fromJson(res.data);
+  }
+
+  Future<Map<String, dynamic>> emitInvoice({
+    required String clientId,
+    required List<InvoiceItem> items,
+    required String dueDate,
+    String currency = 'COP',
+    String? notes,
+    String? issuedDate,
+  }) async {
+    final res = await _dio.post('/invoices/emit', data: {
+      'client_id': clientId,
+      'items': items.map((i) => i.toJson()).toList(),
+      'currency': currency,
+      'due_date': dueDate,
+      if (notes != null) 'notes': notes,
+      if (issuedDate != null) 'issued_date': issuedDate,
+    });
+    return res.data as Map<String, dynamic>;
   }
 
   Future<InvoiceModel> updateInvoice(String id, {

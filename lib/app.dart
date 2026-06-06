@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'core/storage/secure_storage.dart';
 import 'features/auth/presentation/screens/login_screen.dart';
 import 'features/auth/presentation/screens/register_screen.dart';
 import 'features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'features/invoices/presentation/screens/invoices_screen.dart';
 import 'features/invoices/presentation/screens/invoice_detail_screen.dart';
 import 'features/invoices/presentation/screens/create_invoice_screen.dart';
+import 'features/invoices/presentation/screens/invoice_emit_screen.dart';
 import 'features/clients/presentation/screens/clients_screen.dart';
 import 'features/emails/presentation/screens/emails_screen.dart';
 import 'features/settings/presentation/screens/settings_screen.dart';
@@ -16,23 +16,30 @@ import 'features/finance/presentation/screens/transactions_screen.dart';
 import 'features/finance/presentation/screens/create_transaction_screen.dart';
 import 'features/finance/presentation/screens/budgets_screen.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
-import 'features/auth/data/models/user_model.dart';
 import 'shared/widgets/bottom_nav.dart';
 import 'shared/theme/app_theme.dart';
 
 final _router = GoRouter(
   initialLocation: '/dashboard',
-  redirect: (context, state) async {
-    final hasToken = await SecureStorage.hasToken();
-    final isAuthRoute = state.matchedLocation.startsWith('/auth');
+  refreshListenable: authStateListenable,
+  redirect: (context, state) {
+    // No inicializado aún → no redirigir (splash/loading state)
+    if (!authStateListenable.isInitialized) return null;
 
-    if (!hasToken && !isAuthRoute) return '/auth/login';
-    if (hasToken && isAuthRoute) return '/dashboard';
+    final isAuthRoute = state.matchedLocation.startsWith('/auth');
+    if (!authStateListenable.isAuthenticated && !isAuthRoute) return '/auth/login';
+    if (authStateListenable.isAuthenticated && isAuthRoute) return '/dashboard';
     return null;
   },
   routes: [
-    GoRoute(path: '/auth/login', builder: (_, __) => const LoginScreen()),
-    GoRoute(path: '/auth/register', builder: (_, __) => const RegisterScreen()),
+    GoRoute(
+      path: '/auth/login',
+      pageBuilder: (_, __) => const NoTransitionPage(child: LoginScreen()),
+    ),
+    GoRoute(
+      path: '/auth/register',
+      pageBuilder: (_, __) => const NoTransitionPage(child: RegisterScreen()),
+    ),
     ShellRoute(
       builder: (context, state, child) => BottomNavShell(child: child),
       routes: [
@@ -44,6 +51,10 @@ final _router = GoRouter(
             GoRoute(
               path: 'create',
               builder: (_, __) => const CreateInvoiceScreen(),
+            ),
+            GoRoute(
+              path: 'emit',
+              builder: (_, __) => const InvoiceEmitScreen(),
             ),
             GoRoute(
               path: ':id',
@@ -86,12 +97,6 @@ class PayRemindApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen<AsyncValue<UserModel?>>(authProvider, (previous, next) {
-      if (next.value == null) {
-        _router.refresh();
-      }
-    });
-
     return MaterialApp.router(
       title: 'PayRemind',
       debugShowCheckedModeBanner: false,

@@ -729,7 +729,7 @@ class MiSelectorIdioma extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
-      value: value,
+      initialValue: value,
       isExpanded: true,
       isDense: true,
       decoration: const InputDecoration(
@@ -774,7 +774,7 @@ class MiSelectorTono extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
-      value: value,
+      initialValue: value,
       isExpanded: true,
       isDense: true,
       decoration: const InputDecoration(
@@ -827,7 +827,7 @@ class MiSelectorTrato extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
-      value: value,
+      initialValue: value,
       isExpanded: true,
       isDense: true,
       decoration: const InputDecoration(
